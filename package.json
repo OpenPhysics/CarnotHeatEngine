@@ -1,22 +1,25 @@
 {
-  "name": "scenerystack-template",
+  "name": "carnot-heat-engine",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "GitHub template for OpenPhysics SceneryStack sims (rename + scaffold-screens for one or N screens).",
+  "description": "Interactive simulation of the reversible Carnot cycle: a piston-cylinder tied to a live PV diagram, a quantitative efficiency lab with a T-S view, and the same cycle reversed as a refrigerator or heat pump.",
   "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OpenPhysics/SceneryStackTemplate.git"
+    "url": "https://github.com/OpenPhysics/CarnotHeatEngine.git"
   },
   "keywords": [
-    "template",
     "simulation",
     "SceneryStack",
     "interactive",
     "physics",
     "education",
-    "pwa"
+    "pwa",
+    "thermodynamics",
+    "carnot",
+    "heat engine",
+    "entropy"
   ],
   "scripts": {
     "start": "vite",
@@ -27,7 +30,7 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "fix": "biome check --write .",
-    "check": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
+    "check": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "release": "npm run check && npm run lint && npm run build && npm version patch && git push && git push --tags",
     "watch": "tsc --watch",
     "test": "vitest run",
@@ -35,8 +38,6 @@
     "test:fuzz": "playwright test --project=chromium",
     "test:fuzz:quick": "FUZZ_DURATION=10 playwright test --project=chromium",
     "icons": "tsx scripts/generate-icons.ts",
-    "rename": "tsx scripts/rename-sim.ts",
-    "scaffold-screens": "tsx scripts/scaffold-screens.ts",
     "clean": "rm -rf dist",
     "prepare": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config core.hooksPath .githooks || true"
   },

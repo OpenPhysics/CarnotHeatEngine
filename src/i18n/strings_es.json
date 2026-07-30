@@ -1,21 +1,157 @@
 {
-  "title": "Plantilla de Simulación",
+  "title": "Máquina Térmica de Carnot",
   "screens": {
-    "sim": "Sim"
+    "intro": "Introducción",
+    "efficiencyLab": "Laboratorio de Rendimiento",
+    "reversedCycle": "Ciclo Invertido"
+  },
+  "units": {
+    "kelvin": "K",
+    "kilopascal": "kPa",
+    "liter": "L",
+    "kilojoule": "kJ",
+    "joulePerKelvin": "J/K",
+    "percent": "%"
+  },
+  "stages": {
+    "isothermalExpansionHot": "Expansión isotérmica (caliente)",
+    "isothermalCompressionHot": "Compresión isotérmica (caliente)",
+    "isothermalExpansionCold": "Expansión isotérmica (fría)",
+    "isothermalCompressionCold": "Compresión isotérmica (fría)",
+    "adiabaticExpansion": "Expansión adiabática",
+    "adiabaticCompression": "Compresión adiabática"
+  },
+  "controls": {
+    "hotTemperature": "T del foco caliente",
+    "coldTemperature": "T del foco frío",
+    "expansionRatio": "Razón de expansión V<sub>2</sub>/V<sub>1</sub>",
+    "gas": "Gas",
+    "monatomic": "Monoatómico (γ = 5/3)",
+    "diatomic": "Diatómico (γ = 7/5)",
+    "stage": "Etapa",
+    "showPreviousCycle": "Mostrar ciclo anterior",
+    "showEntropyDiagram": "Mostrar diagrama T–S",
+    "showCarnotLimit": "Mostrar curva del límite de Carnot",
+    "explore": "Explorar",
+    "measure": "Medir",
+    "yourEfficiency": "Tu η",
+    "check": "Comprobar",
+    "cooling": "Refrigeración (frigorífico)",
+    "heating": "Calefacción (bomba de calor)"
+  },
+  "readouts": {
+    "pressure": "P",
+    "volume": "V",
+    "temperature": "T",
+    "qHot": "Q<sub>c</sub>",
+    "qCold": "Q<sub>f</sub>",
+    "work": "W",
+    "workIn": "W entra",
+    "efficiency": "η",
+    "efficiencyFormula": "η = 1 − T<sub>f</sub>/T<sub>c</sub>",
+    "carnotLimit": "Límite de Carnot",
+    "cop": "COP",
+    "copCoolingFormula": "COP = T<sub>f</sub>/(T<sub>c</sub> − T<sub>f</sub>)",
+    "copHeatingFormula": "COP = T<sub>c</sub>/(T<sub>c</sub> − T<sub>f</sub>)",
+    "heatRemoved": "Calor extraído del foco frío",
+    "heatDelivered": "Calor cedido al foco caliente",
+    "heatRemovedShort": "Q<sub>f</sub> extraído",
+    "heatDeliveredShort": "Q<sub>c</sub> cedido",
+    "volumeSpan": "V<sub>máx</sub>/V<sub>mín</sub>",
+    "hidden": "—",
+    "correct": "Dentro de 2 puntos: bien leído.",
+    "incorrect": "Fuera de 2 puntos. Compara e inténtalo de nuevo."
+  },
+  "diagrams": {
+    "pvTitle": "Presión–Volumen",
+    "pvXAxis": "V (L)",
+    "pvYAxis": "P (kPa)",
+    "tsTitle": "Temperatura–Entropía",
+    "tsXAxis": "S (J/K)",
+    "tsYAxis": "T (K)",
+    "limitTitle": "η frente a T<sub>f</sub>"
+  },
+  "apparatus": {
+    "hotReservoir": "Foco caliente",
+    "coldReservoir": "Foco frío",
+    "insulated": "Aislado",
+    "heatIn": "Q entra",
+    "heatOut": "Q sale",
+    "workOut": "W sale",
+    "workIn": "W entra"
+  },
+  "energyFlow": {
+    "title": "Flujo de energía",
+    "engineCaption": "Q<sub>c</sub> que entra se reparte en W que sale y Q<sub>f</sub> que sale.",
+    "refrigeratorCaption": "W que entra más Q<sub>f</sub> que entra salen como Q<sub>c</sub>."
   },
   "a11y": {
-    "screenSummary": {
-      "playArea": "El área de juego muestra el contenido principal de la simulación.",
-      "controlArea": "El área de control tiene un botón Restablecer todo que devuelve la simulación a su estado inicial.",
-      "interactionHint": "Explora la simulación interactuando con sus controles."
+    "intro": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra un pistón y un cilindro a la izquierda y un diagrama presión–volumen a la derecha. Un foco caliente y un foco frío se acoplan al cilindro durante los tramos isotérmicos del ciclo, y una funda aislante lo rodea durante los tramos adiabáticos. Un marcador recorre el mismo estado en el diagrama.",
+        "controlArea": "El área de control tiene deslizadores para las dos temperaturas de los focos, un selector de gas, un paso a paso que avanza un tramo del ciclo cada vez, controles de reproducción y velocidad, y un botón de Reiniciar todo.",
+        "interactionHint": "Usa el paso a paso para recorrer los cuatro tramos uno a uno y observa dónde entra y sale el calor."
+      },
+      "currentDetails": "{{stage}}. Presión {{pressure}} kilopascales, volumen {{volume}} litros, temperatura {{temperature}} kelvin.",
+      "controls": {
+        "hotTemperature": "Temperatura del foco caliente",
+        "hotTemperatureHelp": "Fija la temperatura del foco que toca el gas mientras se expande isotérmicamente.",
+        "coldTemperature": "Temperatura del foco frío",
+        "coldTemperatureHelp": "Fija la temperatura del foco al que el gas cede calor. Siempre se mantiene al menos 50 kelvin por debajo del foco caliente.",
+        "expansionRatio": "Razón de expansión",
+        "expansionRatioHelp": "Cuánto se expande el gas en cada tramo isotérmico. Esto junto con las dos temperaturas determina todo el ciclo.",
+        "gas": "Gas del cilindro",
+        "gasHelp": "Los gases monoatómicos y diatómicos tienen razones de capacidad calorífica distintas, lo que cambia la pendiente de los tramos adiabáticos pero no el rendimiento.",
+        "firstStage": "Ir al primer tramo",
+        "previousStage": "Ir al tramo anterior",
+        "nextStage": "Ir al tramo siguiente",
+        "lastStage": "Ir al último tramo"
+      }
     },
-    "currentDetails": "La simulación está en su estado inicial.",
-    "controls": {
-      "exampleControl": "Control de ejemplo"
+    "efficiencyLab": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra un diagrama presión–volumen del ciclo, un panel de flujo de energía que reparte el calor tomado del foco caliente entre el trabajo que sale y el calor cedido al foco frío, y un diagrama temperatura–entropía opcional donde el mismo ciclo es un rectángulo.",
+        "controlArea": "El área de control tiene deslizadores para las dos temperaturas de los focos y la razón de expansión, casillas para la superposición del ciclo anterior, el diagrama temperatura–entropía y la curva del límite de Carnot, un selector entre Explorar y Medir, y un botón de Reiniciar todo.",
+        "interactionHint": "Cambia al modo Medir para leer el calor y el trabajo en el diagrama y calcular tú el rendimiento antes de revelarlo."
+      },
+      "currentDetails": "Calor que entra {{qHot}} kilojulios, trabajo que sale {{work}} kilojulios, calor que sale {{qCold}} kilojulios. {{efficiency}}",
+      "efficiencyKnown": "Rendimiento {{value}} por ciento.",
+      "efficiencyHidden": "El rendimiento está oculto hasta que compruebes tu respuesta.",
+      "controls": {
+        "hotTemperature": "Temperatura del foco caliente",
+        "coldTemperature": "Temperatura del foco frío",
+        "expansionRatio": "Razón de expansión",
+        "showPreviousCycle": "Mostrar el ciclo anterior como superposición atenuada",
+        "showEntropyDiagram": "Mostrar el diagrama temperatura–entropía",
+        "showCarnotLimit": "Mostrar la curva del límite de Carnot",
+        "mode": "Modo de visualización de valores",
+        "modeHelp": "Explorar muestra todos los valores en vivo. Medir oculta el rendimiento hasta que introduces el tuyo y pulsas Comprobar.",
+        "yourEfficiency": "Tu rendimiento calculado, en por ciento",
+        "check": "Comprobar mi rendimiento"
+      }
+    },
+    "reversedCycle": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra el mismo ciclo de Carnot recorrido al revés en un diagrama presión–volumen, con las flechas invertidas, y un panel de flujo de energía donde el trabajo que entra y el calor tomado del foco frío salen juntos como calor cedido al foco caliente.",
+        "controlArea": "El área de control tiene deslizadores para las dos temperaturas de los focos y la razón de expansión, un selector entre refrigeración y calefacción, controles de reproducción y velocidad, y un botón de Reiniciar todo.",
+        "interactionHint": "Compáralo con la pantalla de Introducción: los mismos cuatro tramos, recorridos al revés."
+      },
+      "currentDetails": "{{stage}}. Trabajo que entra {{work}} kilojulios, {{usefulLabel}} {{usefulHeat}} kilojulios, coeficiente de rendimiento {{cop}}.",
+      "controls": {
+        "hotTemperature": "Temperatura del foco caliente",
+        "coldTemperature": "Temperatura del foco frío",
+        "expansionRatio": "Razón de expansión",
+        "framing": "Qué cuenta como salida útil",
+        "framingHelp": "Refrigeración toma como objetivo el calor extraído del foco frío; calefacción toma como objetivo el calor cedido al foco caliente.",
+        "firstStage": "Ir al primer tramo",
+        "previousStage": "Ir al tramo anterior",
+        "nextStage": "Ir al tramo siguiente",
+        "lastStage": "Ir al último tramo"
+      }
     }
   },
   "preferences": {
     "title": "Simulación",
-    "exampleToggle": "Ejemplo de alternancia"
+    "showCornerLabels": "Etiquetar los vértices del ciclo 1–4"
   }
 }

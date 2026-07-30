@@ -17,6 +17,12 @@
  * 2. Add the same key + translated value to ALL other locale files
  *    (TypeScript will show an error here if any locale is missing a key)
  * 3. Expose the new StringProperty via a new getter method below
+ *
+ * ── A note on markup ──────────────────────────────────────────────────────────
+ * Several strings carry `<sub>` markup (Q<sub>h</sub>, V<sub>2</sub>/V<sub>1</sub>)
+ * because thermodynamics is unreadable without subscripts and Unicode has no
+ * subscript "c". Render those with `RichText`, or with `useRichText: true` on a
+ * `NumberDisplay`.
  */
 
 import type { ReadOnlyProperty } from "scenerystack/axon";
@@ -77,28 +83,65 @@ export class StringManager {
    * Each property updates automatically when the locale changes.
    */
   public getScreenNames(): {
-    readonly simStringProperty: ReadOnlyProperty<string>;
+    readonly introStringProperty: ReadOnlyProperty<string>;
+    readonly efficiencyLabStringProperty: ReadOnlyProperty<string>;
+    readonly reversedCycleStringProperty: ReadOnlyProperty<string>;
   } {
     return {
-      simStringProperty: stringProperties.screens.simStringProperty,
+      introStringProperty: stringProperties.screens.introStringProperty,
+      efficiencyLabStringProperty: stringProperties.screens.efficiencyLabStringProperty,
+      reversedCycleStringProperty: stringProperties.screens.reversedCycleStringProperty,
     };
   }
 
-  /**
-   * Accessibility (Interactive Description) StringProperties.
-   *
-   * Returns the reactive `a11y` string tree used by the parallel DOM:
-   *   - `screenSummary.*` — play-area / control-area overview and an interaction
-   *     hint, read by `SimScreenSummaryContent`.
-   *   - `currentDetails` — a paragraph describing the simulation's current state.
-   *     In a real sim, derive a live version from model Properties (see
-   *     LunarLander's ScreenSummaryContent for the canonical pattern).
-   *
-   * Add `accessibleName` / `accessibleHelpText` strings for individual controls
-   * to the `a11y` group too, then read them through this same nested tree.
-   */
-  public getA11yStrings() {
-    return stringProperties.a11y;
+  /** Unit suffixes (K, kPa, L, kJ, …) shared by every readout in the sim. */
+  public getUnits() {
+    return stringProperties.units;
+  }
+
+  /** Names of the six physical processes a cycle leg can represent. */
+  public getStages() {
+    return stringProperties.stages;
+  }
+
+  /** Visible labels for the sliders, checkboxes, and mode switches. */
+  public getControls() {
+    return stringProperties.controls;
+  }
+
+  /** Visible labels and formulas for the numeric readouts. */
+  public getReadouts() {
+    return stringProperties.readouts;
+  }
+
+  /** Titles and axis labels for the PV, T–S, and Carnot-limit diagrams. */
+  public getDiagrams() {
+    return stringProperties.diagrams;
+  }
+
+  /** Labels drawn on the Intro screen's piston-cylinder apparatus. */
+  public getApparatus() {
+    return stringProperties.apparatus;
+  }
+
+  /** Labels for the energy-flow (Sankey-style) panel. */
+  public getEnergyFlow() {
+    return stringProperties.energyFlow;
+  }
+
+  /** Accessibility strings for the Intro screen. */
+  public getIntroA11yStrings() {
+    return stringProperties.a11y.intro;
+  }
+
+  /** Accessibility strings for the Efficiency Lab screen. */
+  public getEfficiencyLabA11yStrings() {
+    return stringProperties.a11y.efficiencyLab;
+  }
+
+  /** Accessibility strings for the Reversed Cycle screen. */
+  public getReversedCycleA11yStrings() {
+    return stringProperties.a11y.reversedCycle;
   }
 
   /**

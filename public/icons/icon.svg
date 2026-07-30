@@ -1,7 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!--
+    The Carnot cycle's PV loop: two shallow isotherms (hot red on top, cold blue
+    below) joined by two steeper adiabats (violet). The tinted interior is the
+    net work. Same colour language as CarnotHeatEngineColors.
+  -->
   <rect width="512" height="512" fill="#1a1a2e"/>
-  <circle cx="256" cy="256" r="180" fill="none" stroke="#4fc3f7" stroke-width="20"/>
-  <circle cx="256" cy="256" r="60" fill="#4fc3f7"/>
-  <ellipse cx="256" cy="256" rx="180" ry="60" fill="none" stroke="#4fc3f7" stroke-width="12" opacity="0.6" transform="rotate(30 256 256)"/>
-  <ellipse cx="256" cy="256" rx="180" ry="60" fill="none" stroke="#4fc3f7" stroke-width="12" opacity="0.6" transform="rotate(-30 256 256)"/>
+
+  <!-- Axes -->
+  <path d="M84 60 L84 428 L452 428" fill="none" stroke="#8892b8" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Enclosed area = net work -->
+  <path d="M132 108 C186 176 246 214 300 234 C336 286 372 322 416 350
+           C336 372 232 384 168 372 C144 300 132 196 132 108 Z"
+        fill="#7ed957" fill-opacity="0.16"/>
+
+  <!-- Hot isotherm, 1 → 2 -->
+  <path d="M132 108 C186 176 246 214 300 234" fill="none" stroke="#ff6b4a" stroke-width="20" stroke-linecap="round"/>
+  <!-- Adiabatic expansion, 2 → 3 -->
+  <path d="M300 234 C336 286 372 322 416 350" fill="none" stroke="#b39ddb" stroke-width="20" stroke-linecap="round"/>
+  <!-- Cold isotherm, 3 → 4 -->
+  <path d="M416 350 C336 372 232 384 168 372" fill="none" stroke="#4fc3f7" stroke-width="20" stroke-linecap="round"/>
+  <!-- Adiabatic compression, 4 → 1 -->
+  <path d="M168 372 C144 300 132 196 132 108" fill="none" stroke="#b39ddb" stroke-width="20" stroke-linecap="round"/>
+
+  <!-- Playhead at state 1 -->
+  <circle cx="132" cy="108" r="22" fill="#ffe066"/>
 </svg>

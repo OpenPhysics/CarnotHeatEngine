@@ -1,21 +1,157 @@
 {
-  "title": "Modèle de Simulation",
+  "title": "Machine Thermique de Carnot",
   "screens": {
-    "sim": "Sim"
+    "intro": "Introduction",
+    "efficiencyLab": "Labo de Rendement",
+    "reversedCycle": "Cycle Inversé"
+  },
+  "units": {
+    "kelvin": "K",
+    "kilopascal": "kPa",
+    "liter": "L",
+    "kilojoule": "kJ",
+    "joulePerKelvin": "J/K",
+    "percent": "%"
+  },
+  "stages": {
+    "isothermalExpansionHot": "Détente isotherme (chaude)",
+    "isothermalCompressionHot": "Compression isotherme (chaude)",
+    "isothermalExpansionCold": "Détente isotherme (froide)",
+    "isothermalCompressionCold": "Compression isotherme (froide)",
+    "adiabaticExpansion": "Détente adiabatique",
+    "adiabaticCompression": "Compression adiabatique"
+  },
+  "controls": {
+    "hotTemperature": "T de la source chaude",
+    "coldTemperature": "T de la source froide",
+    "expansionRatio": "Rapport de détente V<sub>2</sub>/V<sub>1</sub>",
+    "gas": "Gaz",
+    "monatomic": "Monoatomique (γ = 5/3)",
+    "diatomic": "Diatomique (γ = 7/5)",
+    "stage": "Étape",
+    "showPreviousCycle": "Afficher le cycle précédent",
+    "showEntropyDiagram": "Afficher le diagramme T–S",
+    "showCarnotLimit": "Afficher la courbe limite de Carnot",
+    "explore": "Explorer",
+    "measure": "Mesurer",
+    "yourEfficiency": "Votre η",
+    "check": "Vérifier",
+    "cooling": "Refroidissement (réfrigérateur)",
+    "heating": "Chauffage (pompe à chaleur)"
+  },
+  "readouts": {
+    "pressure": "P",
+    "volume": "V",
+    "temperature": "T",
+    "qHot": "Q<sub>c</sub>",
+    "qCold": "Q<sub>f</sub>",
+    "work": "W",
+    "workIn": "W entrant",
+    "efficiency": "η",
+    "efficiencyFormula": "η = 1 − T<sub>f</sub>/T<sub>c</sub>",
+    "carnotLimit": "Limite de Carnot",
+    "cop": "COP",
+    "copCoolingFormula": "COP = T<sub>f</sub>/(T<sub>c</sub> − T<sub>f</sub>)",
+    "copHeatingFormula": "COP = T<sub>c</sub>/(T<sub>c</sub> − T<sub>f</sub>)",
+    "heatRemoved": "Chaleur retirée à la source froide",
+    "heatDelivered": "Chaleur fournie à la source chaude",
+    "heatRemovedShort": "Q<sub>f</sub> retirée",
+    "heatDeliveredShort": "Q<sub>c</sub> fournie",
+    "volumeSpan": "V<sub>max</sub>/V<sub>min</sub>",
+    "hidden": "—",
+    "correct": "À moins de 2 points : bien lu.",
+    "incorrect": "À plus de 2 points. Compare et réessaie."
+  },
+  "diagrams": {
+    "pvTitle": "Pression–Volume",
+    "pvXAxis": "V (L)",
+    "pvYAxis": "P (kPa)",
+    "tsTitle": "Température–Entropie",
+    "tsXAxis": "S (J/K)",
+    "tsYAxis": "T (K)",
+    "limitTitle": "η en fonction de T<sub>f</sub>"
+  },
+  "apparatus": {
+    "hotReservoir": "Source chaude",
+    "coldReservoir": "Source froide",
+    "insulated": "Isolé",
+    "heatIn": "Q entrant",
+    "heatOut": "Q sortant",
+    "workOut": "W sortant",
+    "workIn": "W entrant"
+  },
+  "energyFlow": {
+    "title": "Flux d'énergie",
+    "engineCaption": "Q<sub>c</sub> entrant se partage en W sortant et Q<sub>f</sub> sortant.",
+    "refrigeratorCaption": "W entrant et Q<sub>f</sub> entrant ressortent en Q<sub>c</sub>."
   },
   "a11y": {
-    "screenSummary": {
-      "playArea": "La zone de jeu affiche le contenu principal de la simulation.",
-      "controlArea": "La zone de contrôle comporte un bouton Tout réinitialiser qui ramène la simulation à son état initial.",
-      "interactionHint": "Explorez la simulation en interagissant avec ses commandes."
+    "intro": {
+      "screenSummary": {
+        "playArea": "L'aire de jeu montre un piston et un cylindre à gauche et un diagramme pression–volume à droite. Une source chaude et une source froide viennent au contact du cylindre pendant les portions isothermes du cycle, et un manchon isolant l'entoure pendant les portions adiabatiques. Un repère parcourt le même état sur le diagramme.",
+        "controlArea": "L'aire de contrôle comporte des curseurs pour les deux températures de source, un sélecteur de gaz, un pas à pas qui avance d'une portion du cycle à la fois, des commandes de lecture et de vitesse, et un bouton Tout réinitialiser.",
+        "interactionHint": "Utilisez le pas à pas pour parcourir les quatre portions une à une et observez où la chaleur entre et sort."
+      },
+      "currentDetails": "{{stage}}. Pression {{pressure}} kilopascals, volume {{volume}} litres, température {{temperature}} kelvins.",
+      "controls": {
+        "hotTemperature": "Température de la source chaude",
+        "hotTemperatureHelp": "Fixe la température de la source que le gaz touche pendant sa détente isotherme.",
+        "coldTemperature": "Température de la source froide",
+        "coldTemperatureHelp": "Fixe la température de la source à laquelle le gaz cède de la chaleur. Elle reste toujours au moins 50 kelvins sous la source chaude.",
+        "expansionRatio": "Rapport de détente",
+        "expansionRatioHelp": "De combien le gaz se détend sur chaque portion isotherme. Avec les deux températures, cela détermine tout le cycle.",
+        "gas": "Gaz dans le cylindre",
+        "gasHelp": "Les gaz monoatomiques et diatomiques ont des rapports de capacité thermique différents, ce qui change la pente des portions adiabatiques mais pas le rendement.",
+        "firstStage": "Aller à la première portion",
+        "previousStage": "Aller à la portion précédente",
+        "nextStage": "Aller à la portion suivante",
+        "lastStage": "Aller à la dernière portion"
+      }
     },
-    "currentDetails": "La simulation est dans son état initial.",
-    "controls": {
-      "exampleControl": "Contrôle d'exemple"
+    "efficiencyLab": {
+      "screenSummary": {
+        "playArea": "L'aire de jeu montre un diagramme pression–volume du cycle, un panneau de flux d'énergie qui répartit la chaleur prise à la source chaude entre le travail sortant et la chaleur cédée à la source froide, et un diagramme température–entropie optionnel où le même cycle est un rectangle.",
+        "controlArea": "L'aire de contrôle comporte des curseurs pour les deux températures de source et le rapport de détente, des cases pour la superposition du cycle précédent, le diagramme température–entropie et la courbe limite de Carnot, un sélecteur entre Explorer et Mesurer, et un bouton Tout réinitialiser.",
+        "interactionHint": "Passez en mode Mesurer pour lire la chaleur et le travail sur le diagramme et calculer vous-même le rendement avant de le révéler."
+      },
+      "currentDetails": "Chaleur entrante {{qHot}} kilojoules, travail sortant {{work}} kilojoules, chaleur sortante {{qCold}} kilojoules. {{efficiency}}",
+      "efficiencyKnown": "Rendement {{value}} pour cent.",
+      "efficiencyHidden": "Le rendement est masqué tant que vous n'avez pas vérifié votre réponse.",
+      "controls": {
+        "hotTemperature": "Température de la source chaude",
+        "coldTemperature": "Température de la source froide",
+        "expansionRatio": "Rapport de détente",
+        "showPreviousCycle": "Afficher le cycle précédent en superposition atténuée",
+        "showEntropyDiagram": "Afficher le diagramme température–entropie",
+        "showCarnotLimit": "Afficher la courbe limite de Carnot",
+        "mode": "Mode d'affichage des valeurs",
+        "modeHelp": "Explorer affiche toutes les valeurs en direct. Mesurer masque le rendement jusqu'à ce que vous saisissiez le vôtre et pressiez Vérifier.",
+        "yourEfficiency": "Votre rendement calculé, en pour cent",
+        "check": "Vérifier mon rendement"
+      }
+    },
+    "reversedCycle": {
+      "screenSummary": {
+        "playArea": "L'aire de jeu montre le même cycle de Carnot parcouru à l'envers sur un diagramme pression–volume, flèches inversées, et un panneau de flux d'énergie où le travail entrant et la chaleur prise à la source froide ressortent ensemble en chaleur fournie à la source chaude.",
+        "controlArea": "L'aire de contrôle comporte des curseurs pour les deux températures de source et le rapport de détente, un sélecteur entre refroidissement et chauffage, des commandes de lecture et de vitesse, et un bouton Tout réinitialiser.",
+        "interactionHint": "Comparez avec l'écran Introduction : les mêmes quatre portions, parcourues dans l'autre sens."
+      },
+      "currentDetails": "{{stage}}. Travail entrant {{work}} kilojoules, {{usefulLabel}} {{usefulHeat}} kilojoules, coefficient de performance {{cop}}.",
+      "controls": {
+        "hotTemperature": "Température de la source chaude",
+        "coldTemperature": "Température de la source froide",
+        "expansionRatio": "Rapport de détente",
+        "framing": "Ce qui compte comme sortie utile",
+        "framingHelp": "Refroidissement prend pour but la chaleur retirée à la source froide ; chauffage prend pour but la chaleur fournie à la source chaude.",
+        "firstStage": "Aller à la première portion",
+        "previousStage": "Aller à la portion précédente",
+        "nextStage": "Aller à la portion suivante",
+        "lastStage": "Aller à la dernière portion"
+      }
     }
   },
   "preferences": {
     "title": "Simulation",
-    "exampleToggle": "Exemple de bascule"
+    "showCornerLabels": "Étiqueter les sommets du cycle 1–4"
   }
 }

@@ -1,127 +1,165 @@
-# CLAUDE.md — SceneryStack Template
+# CLAUDE.md — Carnot Heat Engine
 
 Sim-specific context for AI assistants. General SceneryStack guidance: [OpenPhysics/.github/CLAUDE.md](https://github.com/OpenPhysics/.github/blob/main/CLAUDE.md).
 
 ## Project
 
-Reusable SceneryStack template (one or N screens) and **canonical accessibility reference** for
-OpenPhysics sims. Prefer `Baton/scripts/create-sim.sh` (or GitHub **Use this template** +
-`npm run rename` + `npm run scaffold-screens`) to fork it. For multi-screen sims, see
-[`doc/multi-screen.md`](doc/multi-screen.md).
+Three-screen simulation of the reversible ideal-gas **Carnot cycle** — the fleet's
+first thermodynamics sim. Forked from `SceneryStackTemplate`.
+
+| Screen | Folder | What it is for |
+|---|---|---|
+| Intro | `src/intro/` | Piston-cylinder + reservoirs beside a live PV diagram, driven by a discrete stage stepper |
+| Efficiency Lab | `src/efficiency-lab/` | Energy-flow bars, ghosted previous cycle, T–S diagram, η-vs-T_cold inset, Explore/Measure modes |
+| Reversed Cycle | `src/reversed-cycle/` | The same cycle counter-clockwise, framed as a refrigerator or heat pump (COP) |
+
+Physics for educators: [`doc/model.md`](doc/model.md). Architecture and the
+reasoning behind the non-obvious choices: [`doc/implementation-notes.md`](doc/implementation-notes.md).
+Read both before changing the model.
 
 ## Key files
 
 | File | Purpose |
 |---|---|
-| `src/SimColors.ts` | All `ProfileColorProperty` instances |
-| `src/SimConstants.ts` | Named numeric constants (layout px, physics SI units) |
-| `src/SimNamespace.ts` | Namespace for color property names |
+| `src/common/model/carnotCycleGeometry.ts` | **Pure** cycle maths — corner points, per-leg analytic curves, ∮P dV. No SceneryStack imports; unit-tested directly |
+| `src/common/model/CarnotCycleModel.ts` | Property layer over the maths: inputs, playhead, energy totals, the η cross-check |
+| `src/common/model/CycleStage.ts` | The four legs + direction-aware process naming (`processFor`) |
+| `src/common/model/CycleDirection.ts` | `ENGINE` \| `REFRIGERATOR` |
+| `src/common/model/GammaPreset.ts` | `MONATOMIC` \| `DIATOMIC` → γ and C_v |
+| `src/common/view/CycleDiagramNode.ts` | Shared diagram frame: bamboo `ChartTransform`, axes, ticks, auto-scaling |
+| `src/common/view/PVDiagramNode.ts` | The four legs, work-area fill, playhead, ghost, direction arrows |
+| `src/common/view/TSDiagramNode.ts` | The same cycle as a rectangle in (S, T) |
+| `src/common/view/EnergyFlowNode.ts` | Q_hot → W + Q_cold bars, shared by two screens |
+| `src/common/view/CycleParameterControls.ts` | The three cycle-defining sliders, shared by all three screens |
+| `src/common/view/StageStepperNode.ts` | ⏮ ◀ ▶ ⏭ over the four legs |
+| `src/CarnotHeatEngineConstants.ts` | Ranges, defaults, layout px, fonts |
+| `src/CarnotHeatEngineColors.ts` | All `ProfileColorProperty` instances |
 | `src/i18n/StringManager.ts` | Singleton localized string accessor |
-| `src/sim-screen/SimScreen.ts` | Screen wrapper |
-| `src/sim-screen/model/SimModel.ts` | Simulation state and logic |
-| `src/sim-screen/view/SimScreenView.ts` | Visual nodes, layout, `screenSummaryContent` + `pdomOrder` |
-| `src/sim-screen/view/SimScreenSummaryContent.ts` | Accessible screen summary (reference a11y pattern) |
-| `src/sim-screen/view/SimKeyboardHelpContent.ts` | Keyboard-help dialog content |
-| `src/common/SimPanel.ts` | Pre-themed `Panel` wrapper (uses `SimColors` automatically) |
-| `src/common/SimButtonOptions.ts` | Flat button-appearance option bundles + light-control-surface combo-box options |
-| `src/common/TimeModel.ts` | Composable play/pause + elapsed-time model for animated sims |
-| `scripts/generate-icons.ts` | PNG icons from `public/icons/icon.svg` |
-| `scripts/rename-sim.ts` | Sim-level fork/rename (package id + metadata, Colors, Constants, Panel, ButtonOptions, Preferences) |
-| `scripts/scaffold-screens.ts` | Emit N screen packages + wire main/strings/icons |
+
+## Things that will bite you
+
+### The third slider is not the overall compression ratio
+
+`compressionRatioProperty` is `V₂/V₁` — the volume ratio across *one* isothermal
+leg. It is **not** V_max/V_min, and it cannot be: the overall span equals `r·τ`
+where `τ = (T_hot/T_cold)^(1/(γ−1))` reaches 32 for a diatomic gas at the range
+extremes, so pinning V_max/V_min to a small number admits no solution. The
+derived overall span is exposed as `CycleGeometry.volumeSpanRatio`. Full argument
+in `carnotCycleGeometry.ts` § "Why the free parameter is a per-leg ratio".
+
+### A stage names a leg, not a process
+
+`CycleStage.ISOTHERMAL_EXPANSION` identifies the leg from corner 1 to corner 2.
+On the Reversed Cycle screen that leg is an isothermal *compression*. Never read
+a stage name as a description of what is happening — call
+`processFor(stage, direction)` and label through `common/view/stageStrings.ts`.
+
+### Progress has different bounds per direction
+
+`[0, 1)` forwards, `(0, 1]` backwards. The two ends of a leg are the same point,
+so each end must belong to exactly one leg. `CarnotCycleModel.step` picks its
+wrap loop by direction; a single loop testing both bounds ping-pongs forever on
+an exact 0 or 1. Do not "simplify" it back.
+
+### geometryProperty is per-change, never per-frame
+
+It runs a 4 × 200-interval Simpson integration. `stateProperty` is the per-frame
+path. Keep it that way.
+
+### The η cross-check must stay honest
+
+`efficiencyAgreesProperty` compares the numerically integrated η against
+`1 − T_c/T_h` and asserts they match. If you change the corner-point derivation
+and this starts failing, the derivation is wrong — do not widen the tolerance.
+The quadrature integrates in log-volume space for accuracy; reverting that to a
+plain integration in V costs several digits on the wide adiabats.
 
 ## Common components
 
-### SimPanel
+### CarnotHeatEnginePanel
 
-Every control panel and info box in the sim should use `SimPanel` so that
-default/projector color switching is automatic:
+Every control panel and info box uses `CarnotHeatEnginePanel` so default/projector
+switching is automatic:
 
 ```typescript
-import { SimPanel } from "../../common/SimPanel.js";
-const panel = new SimPanel(content);              // uses SimColors defaults
-const panel = new SimPanel(content, { xMargin: 20 }); // override any PanelOption
+import { CarnotHeatEnginePanel } from "../../common/CarnotHeatEnginePanel.js";
+const panel = new CarnotHeatEnginePanel(content);
+const panel = new CarnotHeatEnginePanel(content, { xMargin: 20 });
 ```
+
+### The colour language
+
+One idea, one hue, on every screen: warm red for the hot reservoir / T_hot / hot
+isotherm / Q_hot, cool blue for their cold counterparts, violet for the adiabatic
+legs and the insulating sleeve, green for work. A student who learns the palette
+on the Intro screen reads the Efficiency Lab bars without a second legend — keep
+new colours inside that scheme.
+
+### CarnotHeatEngineButtonOptions
+
+Buttons are flat, not SceneryStack's default 3-D look:
+
+```typescript
+import { FLAT_RESET_ALL_BUTTON_OPTIONS, FLAT_RECTANGULAR_BUTTON_OPTIONS } from "../../common/CarnotHeatEngineButtonOptions.js";
+```
+
+`FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS` spreads into `TimeControlNode`'s
+`playPauseStepButtonOptions`; `TIME_CONTROL_SPEED_RADIO_OPTIONS` fixes the
+speed-radio label colour on dark panels.
 
 ### TimeModel
 
-For simulations with animation, compose `TimeModel` into your screen model:
+Extended from the template's with a `timeSpeedProperty` (0.25× / 1× / 2×) and a
+`scaledDt(dt)` the screen models pass on to `cycle.step`, so one speed setting
+governs both the clock and the cycle.
 
-```typescript
-import { TimeModel } from "../../common/TimeModel.js";
+## Strings
 
-export class MyModel implements TModel {
-  public readonly timer = new TimeModel();   // starts paused; pass true to auto-play
+Several strings carry `<sub>` markup (`Q<sub>h</sub>`, `V<sub>2</sub>/V<sub>1</sub>`)
+because thermodynamics is unreadable without subscripts and Unicode has no
+subscript "c". Render those with `RichText`, or `useRichText: true` on a
+`NumberDisplay` / `NumberControl` (`createNumberControl` already sets both).
 
-  public step(dt: number): void {
-    this.timer.step(dt);
-    // use this.timer.timeProperty.value for physics
-  }
-  public reset(): void { this.timer.reset(); /* … */ }
-}
-```
-
-Wire the view to `TimeControlNode` from `scenerystack/scenery-phet` binding on
-`model.timer.isPlayingProperty`.
-
-### SimButtonOptions
-
-SceneryStack's push/round buttons default to a 3-D/beveled look; every button in the sim
-should be flat instead. Spread these into the relevant options object:
-
-```typescript
-import { FLAT_RESET_ALL_BUTTON_OPTIONS, FLAT_RECTANGULAR_BUTTON_OPTIONS } from "../../common/SimButtonOptions.js";
-
-const resetAllButton = new ResetAllButton({ ...FLAT_RESET_ALL_BUTTON_OPTIONS, listener: () => {...} });
-const exampleButton = new RectangularPushButton({ ...FLAT_RECTANGULAR_BUTTON_OPTIONS, content, listener });
-```
-
-`FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS` spreads into `TimeControlNode`'s `playPauseStepButtonOptions`;
-`TIME_CONTROL_SPEED_RADIO_OPTIONS` fixes `TimeControlNode`'s speed-radio label color, which
-otherwise defaults to black text on the sim's dark default-mode panels. `SIM_COMBO_BOX_OPTIONS`
-themes a `ComboBox`'s button/list chrome to the light control surface below; pair item labels
-with `LIGHT_SURFACE_TEXT_FILL` (not `SimColors.textColorProperty`, which is for panel-fill text).
-
-`SimColors.ts` backs this with a "light control surfaces" section —
-`controlSurfaceColorProperty`, `controlSurfaceDisabledColorProperty`,
-`controlSurfaceTextColorProperty` — identical white/dark-text values in both default and
-projector profiles, so any component that must stay light regardless of theme (combo boxes,
-flat buttons, editable fields) keeps readable contrast automatically.
+`readouts.heatRemoved` / `heatDelivered` are the long descriptive phrases used in
+the screen summary; `…Short` are the compact forms that fit the readout column.
+Do not swap them.
 
 ## Accessibility
 
-This template is the **canonical accessibility reference** for OpenPhysics sims. It ships with
-the three required layers wired up: PDOM names, a `SimScreenSummaryContent`, and an explicit
-`pdomOrder` + `SimKeyboardHelpContent`. A11y strings live under the `a11y` key in each locale
-JSON, exposed via `StringManager.getA11yStrings()`. When building a real sim, make
-`currentDetailsContent` a live `DerivedProperty` over model state and add `accessibleName`s to
-every interactive node. Full convention and checklist: [Baton/ACCESSIBILITY.md](https://github.com/OpenPhysics/Baton/blob/main/ACCESSIBILITY.md).
+All three layers are wired: PDOM names on every interactive node, a per-screen
+`*ScreenSummaryContent` with a **live** `currentDetailsContent`, and an explicit
+`pdomOrder` + `*KeyboardHelpContent`. A11y strings live under `a11y.<screen>` in
+each locale JSON.
+
+The Efficiency Lab's summary respects Measure mode: it says the efficiency is
+hidden rather than reading it out, so a screen-reader user gets the same exercise
+a sighted user does instead of a spoiler. Keep that if you touch the summary.
+
+Full convention: [Baton/ACCESSIBILITY.md](https://github.com/OpenPhysics/Baton/blob/main/ACCESSIBILITY.md).
 
 ## Compliance carve-outs
 
-A clean fork of this template rarely needs compliance carve-outs — root `SimConstants.ts`,
-`*Colors.ts`, `*Namespace.ts`, standard screen layout, and full a11y wiring pass Baton's
-compliance check out of the box. Document carve-outs in the forked sim's `CLAUDE.md` only when
-you introduce a deliberate deviation (nested constants, hardcoded interaction fills, etc.).
+None. Root `CarnotHeatEngineConstants.ts` / `*Colors.ts` / `*Namespace.ts`,
+kebab-case screen folders, `src/preferences/`, and the standard `tests/` layout
+all follow Baton's conventions as shipped.
+
+One deliberate structural note: screens receive the
+`CarnotHeatEnginePreferencesModel` as a positional constructor argument from
+`main.ts`, because the diagrams honour the "label cycle corners" preference. The
+template does not plumb preferences into screens, so this is an addition rather
+than a deviation.
 
 ## Testing
 
-Fleet-standard Vitest layout (keep when forking):
-
 | Path | Purpose |
 |---|---|
-| `vitest.config.ts` | `happy-dom` environment; `setupFiles: ["./tests/setup.ts"]`; `execArgv: ["--expose-gc"]` |
-| `tests/setup.ts` | Canvas / AudioContext mocks + `init({ name: "…" })` before SceneryStack imports |
-| `tests/TimeModel.test.ts` | Sample model unit tests — replace with real physics tests |
-| `tests/memory-leak.test.ts` | WeakRef + `forceGC` dispose regression (fleet pattern) |
-| `tests/fuzz/fuzz.spec.ts` | Optional Playwright fuzz smoke via joist `?fuzz` |
-| `playwright.config.ts` | Chromium project + Vite webServer for fuzz |
+| `tests/carnotCycleGeometry.test.ts` | Corner points vs. hand-computed values; ∮P dV vs. closed-form η; range-extreme finiteness; leg parametrization |
+| `tests/CarnotCycleModel.test.ts` | Temperature clamp; stage stepper in both directions; continuous stepping; process naming; COP; γ-change snapping; reset |
+| `tests/memory-leak.test.ts` | WeakRef + `forceGC` dispose regression |
+| `tests/fuzz/fuzz.spec.ts` | Playwright fuzz smoke via joist `?fuzz` |
+| `tests/setup.ts` | Canvas / AudioContext mocks + `init({ name: "carnot-heat-engine" })` |
 
-- Put unit tests only under root `tests/`, mirroring `src/` (never co-locate or use `__tests__/`).
-- Change the `name` passed to `init()` in `tests/setup.ts` to match `package.json` after `npm run rename`.
-- Run `npm test`. CI runs the suite when a `test` script is present.
-- Expand `memory-leak.test.ts` for any component that adds/removes nodes or links Properties at
-  runtime (see OpticsLab for a deep suite).
-- Optional: `npm run test:fuzz` / `test:fuzz:quick` (not part of default CI).
+Environment is `happy-dom` with `execArgv: ["--expose-gc"]`, per the template.
 
 ## Commands
 
@@ -137,68 +175,8 @@ npm run lint && npm run check && npm run build && npm test
 | `npm run check` | TypeScript (`tsc --noEmit` + scripts project) |
 | `npm run lint` / `npm run fix` | Biome check / auto-fix |
 | `npm test` | Vitest unit tests |
-| `npm run test:fuzz` | Playwright fuzz smoke |
-| `npm run test:fuzz:quick` | 10s fuzz |
+| `npm run test:fuzz` / `test:fuzz:quick` | Playwright fuzz smoke (15s / 10s) |
 | `npm run icons` | Regenerate PWA icons |
-| `npm run rename` | Sim-level fork/rename (`--id`, `--name`) |
-| `npm run scaffold-screens` | Emit N screens (`--screens Intro,Lab`) |
-
-## Customizing a new sim from this template
-
-### Recommended: Baton create-sim
-
-```sh
-Baton/scripts/create-sim.sh --repo Friction --name "Friction" --screens Intro,Lab --shared-model --onboard
-```
-
-### Manual: GitHub template + rename + scaffold
-
-```sh
-npm install
-npm run rename -- --id friction --name "Friction"
-npm run scaffold-screens -- --screens Intro,Lab --shared-model
-# omit --screens for one screen named after the sim; omit --shared-model for independent models
-npm run fix     # required: both scripts reorder imports, which Biome then sorts
-npm run check
-```
-
-`rename` updates package id and metadata, display name, and every sim-level `Sim*`
-(Colors, Constants, Namespace, Panel, ButtonOptions, Preferences, query parameters).
-`scaffold-screens` owns screen folders (fleet naming: `src/intro/`, not `intro-screen/`).
-After both steps no `Sim*` identifier should remain — `grep -rn '\bSim[A-Z_]' src` to confirm.
-
-### Manual checklist (if not using the scripts)
-
-1. **Rename** — replace `scenerystack-template` / `SceneryStack Template` / `Sim` prefix in `init.ts`, `brand.ts`, `package.json` (name, description, keywords, repository.url), Colors/Constants/Namespace/Panel/ButtonOptions/Preferences
-2. **Screens** — run `scaffold-screens` or mirror `sim-screen/` into kebab folders
-3. **Locale** — add `strings_XX.json`, register in `StringManager`, add locale to `init.ts` `availableLocales`
-4. **Icon** — edit `public/icons/icon.svg`, run `npm run icons`; match theme color in `index.html` / `vite.config.ts`
-5. **Colors** — edit `*Colors.ts` (`default` + `projector` profiles per property)
-
-## Multi-screen sims
-
-Full guide: [`doc/multi-screen.md`](doc/multi-screen.md)
-
-Summary:
-- Prefer `npm run scaffold-screens -- --screens Intro,Lab` (add `--shared-model` for a root model)
-- Or create a screen folder mirroring `src/sim-screen/` for each screen (kebab names, no `-screen` suffix)
-- Add screen-name keys to all locale JSON files; nest `a11y` per screen
-- Expose new getters in `StringManager.getScreenNames()` / `get{Screen}A11yStrings()`
-- Shared state: `--shared-model` → `common/model/SharedModel.ts` composed per screen (rename to a domain type)
-- Add `src/common/{SimName}ScreenIcons.ts` with `create{Screen}Icon()` factories; wire `homeScreenIcon` + `navigationBarIcon` on each Screen
-- Register all screens in the `screens` array in `main.ts`
-
-## Using this template beyond a direct copy
-
-| Approach | When to use |
-|---|---|
-| **`Baton/scripts/create-sim.sh`** | Agents / fleet — create repo, rename, scaffold N screens |
-| **GitHub template** ("Use this template") | Humans starting a sim in the browser |
-| `npm run rename` + `scaffold-screens` | Same, after cloning the template |
-| **npm workspace / monorepo** | Managing a suite of sims with shared tooling |
-| **git subtree** for pulling updates | Keeping forks in sync with template improvements |
-
-See `doc/multi-screen.md` → "Using this template beyond a direct copy" for details.
 
 ## PWA
 

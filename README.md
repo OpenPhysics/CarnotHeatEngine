@@ -1,15 +1,20 @@
-# SceneryStack Template
+# Carnot Heat Engine
 
-A reusable SceneryStack simulation template for one or N screens, built with
+An interactive simulation of the ideal reversible Carnot cycle, built with
 [SceneryStack](https://scenerystack.org/), Vite 8, TypeScript 7, and Biome 2.
+Three screens tie the four legs of the cycle to a physical piston-cylinder, to
+the energy budget that fixes the efficiency, and to the same apparatus run
+backwards as a refrigerator.
 
 ## Features
 
-- SceneryStack scaffold with model/view separation (`rename` + `scaffold-screens` for one or N screens)
-- English, Spanish, and French localization via `StringManager`
+- **Intro** — a piston-cylinder with docking reservoirs and an insulating sleeve, side by side with a live PV diagram, plus a discrete stage stepper that walks the four legs one at a time
+- **Efficiency Lab** — energy-flow bars, a ghosted previous-cycle overlay, a toggleable T–S diagram (where a Carnot cycle is a rectangle), an η-vs-T_cold reference inset, and a Measure mode that withholds η until the student computes it
+- **Reversed Cycle** — the same cycle counter-clockwise, framed as a refrigerator or a heat pump, with COP in place of η
+- Reversible ideal-gas physics with η derived twice — closed form and numerically integrated ∮P dV — and asserted to agree
+- English, Spanish, and French localization via `StringManager`, with full screen-reader descriptions
 - Default and projector color profiles
 - Progressive Web App (installable, offline-capable)
-- Git hooks for Biome pre-commit checks
 - Shared GitHub Actions CI via `OpenPhysics/Baton`
 
 ## Quick Start
@@ -26,8 +31,9 @@ npm start        # dev server → http://localhost:5173
 |---|---|
 | `npm start` / `npm run dev` | Start Vite dev server |
 | `npm run build` | Type-check + production build → `dist/` |
+| `npm run build:single` | Single-file build mode |
 | `npm run preview` | Preview the production build locally |
-| `npm test` | Run Vitest unit tests (includes memory-leak suite) |
+| `npm test` | Run Vitest unit tests (physics + memory-leak suites) |
 | `npm run test:fuzz` | Optional Playwright fuzz smoke (`?fuzz`, default 15s) |
 | `npm run test:fuzz:quick` | Shorter fuzz smoke (10s) |
 | `npm run check` | TypeScript type check |
@@ -35,11 +41,7 @@ npm start        # dev server → http://localhost:5173
 | `npm run format` | Auto-format all files |
 | `npm run fix` | Lint + auto-fix |
 | `npm run icons` | Regenerate PNG icons from `public/icons/icon.svg` |
-| `npm run rename` | Sim-level fork/rename (`--id`, `--name`) |
-| `npm run scaffold-screens` | Emit N fleet-named screen packages from `sim-screen/` (`--shared-model` optional) |
 | `npm run clean` | Remove `dist/` |
-
-New sims start at `version: "0.0.0"` in `package.json`. Bump only when cutting a release (for example `npm version patch` and a matching git tag). Keep `name` in kebab-case; it is separate from the SceneryStack sim identifier in `src/init.ts`.
 
 ## Tech Stack
 

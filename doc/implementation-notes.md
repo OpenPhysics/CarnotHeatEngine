@@ -1,135 +1,163 @@
-# Implementation Notes - SceneryStack Template
+# Implementation Notes - Carnot Heat Engine
 
-Developer-facing notes on the **SceneryStackTemplate** scaffold. **Replace and expand this file when
-forking** to describe your sim's real architecture (see Stern Gerlach or Light Propagation for
-target quality). Until then, this documents what the template provides out of the box.
+Developer-facing notes on how the simulation is put together. The physics itself
+is described for educators in [model.md](./model.md).
 
-## Architecture Overview
-
-SceneryStackTemplate is the fleet-canonical starting point for new SceneryStack sims (one or N screens).
-It demonstrates Model–View separation, color profiles, localization, reset behavior, accessibility
-reference wiring, and reusable common components — **without** domain physics.
+## Architecture overview
 
 ```
 main.ts
-  └─ SimScreen             (Screen<SimModel, SimScreenView>)
-       ├─ SimModel          state + logic  (src/sim-screen/model/)  ← stub: add physics here
-       └─ SimScreenView     visuals        (src/sim-screen/view/)
-            ├─ SimScreenSummaryContent     (PDOM overview — reference a11y pattern)
-            └─ SimKeyboardHelpContent      (keyboard help dialog)
+  ├─ IntroScreen              (Screen<IntroModel, IntroScreenView>)
+  ├─ EfficiencyLabScreen      (Screen<EfficiencyLabModel, EfficiencyLabScreenView>)
+  └─ ReversedCycleScreen      (Screen<ReversedCycleModel, ReversedCycleScreenView>)
 
-src/common/
-  ├─ SimPanel.ts           pre-themed panel (uses SimColors)
-  ├─ SimButtonOptions.ts   flat button / combo-box option bundles
-  └─ TimeModel.ts          composable play/pause + elapsed time
+src/common/model/
+  carnotCycleGeometry.ts      pure maths: corner points, per-leg curves, ∮P dV
+  CarnotCycleModel.ts         Property layer over the maths + the playhead
+  CycleStage.ts               the four legs, direction-aware process naming
+  CycleDirection.ts           ENGINE | REFRIGERATOR
+  GammaPreset.ts              MONATOMIC | DIATOMIC → γ and C_v
 
-src/preferences/
-  ├─ SimPreferencesModel   sim-specific pref state
-  ├─ SimPreferencesNode    pref UI in Preferences → Simulation
-  └─ simQueryParameters    QueryStringMachine declarations
+src/common/view/
+  CycleDiagramNode.ts         shared frame: axes, grid, ticks, auto-scaling
+  PVDiagramNode.ts            the four legs, work area, playhead, ghost, arrows
+  TSDiagramNode.ts            the same cycle as a rectangle in (S, T)
+  EnergyFlowNode.ts           Q_hot → W + Q_cold bars
+  CycleParameterControls.ts   the three cycle-defining sliders
+  StageStepperNode.ts         ⏮ ◀ ▶ ⏭ over the four legs
 ```
 
-Data flows Model → View through AXON `Property` objects (`.link()` / `.lazyLink()`). The view never
-integrates physics; the model never imports scenery.
+Each screen model composes **its own** `CarnotCycleModel` — the fleet's
+multi-screen pattern, where the shared *code* lives in `common/model/` but the
+live state does not. No Property is shared between screens. The Reversed
+Cycle screen differs from the others only by the `CycleDirection` it passes to
+that constructor.
 
-## Forking checklist
+## The model, in two layers
 
-### Automated rename + scaffold (recommended)
+`carnotCycleGeometry.ts` is deliberately free of SceneryStack: plain functions of
+plain numbers, unit-testable without a DOM. `CarnotCycleModel` wraps it in
+Properties.
 
-```sh
-npm run rename -- --id my-sim --name "My Simulation"
-npm run scaffold-screens -- --screens Intro,Lab   # or omit --screens for one screen
-npm run check
-```
+The split that matters for performance is **per-change vs. per-frame**:
 
-Or from the workspace: `Baton/scripts/create-sim.sh --repo MySim --name "My Simulation"`.
+- `geometryProperty` derives the four corner states and every per-cycle energy
+  total. It recomputes only when an input Property changes, and it runs the
+  numerical ∮P dV integration, so it is far too expensive for a frame loop.
+- `stateProperty` interpolates along the current leg's analytic curve from
+  `cycleStageProperty` + `stageProgressProperty`. That is the only thing that
+  moves every frame, and it is a handful of arithmetic operations.
 
-`scripts/rename-sim.ts` updates sim-level identifiers (package id, Colors, Preferences).
-`scripts/scaffold-screens.ts` emits fleet-named screen folders and wires main/strings/icons.
+### Playhead parametrization
 
-### Manual steps (after rename/scaffold or if skipping the scripts)
+`cycleStageProperty` names a leg **geometrically** — the pair of corners it joins
+— never the process taking place on it. `stageProgressProperty` runs 0 → 1 from
+the leg's engine-order start corner to its end corner.
 
-1. **`doc/model.md`** — educator physics (equations, ranges, simplifications).
-2. **`doc/implementation-notes.md`** — this file, rewritten for your architecture.
-3. **Screen model(s)** — real Properties, `step(dt)`, `reset()`; compose `TimeModel` if animated.
-4. **Screen view(s)** — play area + controls; wire `ResetAllButton` to `model.reset()`.
-5. **`*Colors.ts`** — sim palette (default + projector profiles).
-6. **Locale JSON** — title, strings, `a11y` keys; register locales in `init.ts`.
-7. **`public/icons/icon.svg`** → `npm run icons`; align theme color in `index.html` / vite config.
-8. **`tests/setup.ts`** — `init({ name: … })` must match `package.json` name after rename.
-9. **`CLAUDE.md`** — sim-specific file map and pitfalls for AI assistants.
+Running as a refrigerator does not change any of that: progress simply decreases
+and the stage order reverses. Progress lives in `[0, 1)` running forwards and
+`(0, 1]` running backwards, because the two ends of a leg are the same point in
+space and each has to belong to exactly one leg or the playhead stalls at a
+corner. `CarnotCycleModel.step` picks its wrap loop by direction for that reason;
+one loop testing both bounds would ping-pong forever on an exact 0 or 1.
 
-## Common components (keep when forking)
+The process actually happening — expansion vs. compression — comes from
+`processFor(stage, direction)`, and the view turns that into a localized label
+through `common/view/stageStrings.ts`.
 
-### SimPanel
+### The standing η cross-check
 
-Every control panel should use `SimPanel` so projector-mode switching is automatic:
+η is computed two ways: the closed form `1 − T_cold/T_hot`, and by numerically
+integrating ∮P dV around the four analytic legs. `efficiencyAgreesProperty`
+compares them and an assertion fires in development if they diverge. A wrong
+corner-point derivation would otherwise produce a wrong number that still looks
+entirely plausible.
 
-```typescript
-import { SimPanel } from "../../common/SimPanel.js";
-const panel = new SimPanel(content);
-const panelWide = new SimPanel(content, { xMargin: 20 });
-```
+The quadrature integrates in **log-volume space** (`u = ln V`, so `∫P dV = ∫P·V du`).
+P·V is constant on an isothermal leg — making Simpson's rule exact there — and a
+mild power law on an adiabatic one. Integrating in V directly loses several
+digits on the wide adiabats at the top of the parameter ranges, which would
+undercut the whole point of having an independent check.
 
-### TimeModel
+## The view
 
-Compose into your screen model for animation (do not subclass `TimeModel`):
+### Auto-scaling is not cosmetic
 
-```typescript
-export class MyModel implements TModel {
-  public readonly timer = new TimeModel();  // pass true to auto-play on startup
+Across the allowed parameter space the cycle's volume span runs from about 3× to
+256×, and its pressure span from about 3× to 1000×. Both diagram axes therefore
+re-range and re-derive their tick spacing on every geometry change
+(`CycleDiagramNode.setRanges` + `chartUtils.niceStep`). A fixed scale would leave
+most cycles off-screen or crushed into a corner.
 
-  public step(dt: number): void {
-    this.timer.step(dt);
-    // physics uses this.timer.timeProperty.value
-  }
-  public reset(): void { this.timer.reset(); /* restore initial state */ }
-}
-```
+### Why the frame is factored out
 
-Wire `TimeControlNode` to `model.timer.isPlayingProperty` in the view.
+`CycleDiagramNode` owns the bamboo `ChartTransform`, the frame, grid, ticks, tick
+labels, title and axis labels; subclasses supply only what is plotted. That is
+what makes `TSDiagramNode` a short file rather than a second copy of
+`PVDiagramNode`, and it is the piece an Otto/Diesel/Brayton sim would reuse
+directly. Per the fleet's convention it stays in this repo until a second sim
+actually needs it.
 
-### SimButtonOptions
+### Layout notes
 
-Spread flat button options into every push/round button and `TimeControlNode` (see `CLAUDE.md`).
-Use `SIM_COMBO_BOX_OPTIONS` + `LIGHT_SURFACE_TEXT_FILL` for light control surfaces on dark panels.
+- The PV diagram is anchored by its **right** edge against the control panel.
+  Its corner labels overhang the plot frame (they sit in an unclipped
+  `overlayLayer`), so centring it in the available gap let them collide with the
+  panel.
+- `CarnotCycleNode` pins its own `localBounds` to the widest reservoir
+  arrangement. Without that, a reservoir sliding in or out would change the
+  node's bounds and drag the whole cylinder sideways under a `left`-anchored
+  layout.
+- Piston height maps to volume **logarithmically**. A linear map would pin the
+  piston to the cylinder base for three of the four corners at high volume spans.
+- The Measure-mode self-check is its own panel (`MeasurePanelNode`) rather than a
+  section inside `EfficiencyPanelNode`, so switching modes does not change the
+  energy panel's height and shove the rest of the screen around.
 
-## Accessibility (reference implementation)
+### Ghosted previous cycle
 
-The template is the **canonical OpenPhysics a11y reference**:
+`EfficiencyLabModel` captures the previous geometry from the `DerivedProperty`
+listener's old value, but holds it until the parameters have been still for
+`GHOST_SETTLE_TIME_S`. Publishing it immediately would make the ghost trail a
+slider drag by one frame, comparing nothing useful; settling it means the ghost
+snaps to wherever the drag started.
 
-- PDOM `accessibleName` on interactive nodes (prefer live `StringProperty`s).
-- `SimScreenSummaryContent` with a live `currentDetailsContent` `DerivedProperty` over model state.
-- Explicit `pdomOrder` + `SimKeyboardHelpContent`.
-- Strings under `a11y` in locale JSON → `StringManager.getA11yStrings()`.
+## Edge cases handled
 
-Full checklist: [Baton/ACCESSIBILITY.md](https://github.com/OpenPhysics/Baton/blob/main/ACCESSIBILITY.md).
+1. **T_hot → T_cold convergence** — clamped at the Property level, in both
+   directions, with a 50 K floor. Each link pushes the *other* temperature, and
+   the push always lands on a value satisfying both, so the pair settles in one
+   bounce.
+2. **Short legs at extreme ratios** — every leg gets the same wall-clock
+   duration, which doubles as the per-leg minimum-duration floor.
+3. **γ switched mid-leg** — three of the four corners move at once, so the
+   playhead snaps to the start of the leg it is on rather than interpolating
+   across the discontinuity.
+4. **Non-finite guards** — `sanitizeParameters` clamps inputs into the region
+   where the closed form exists (positive temperatures, T_hot > T_cold, γ > 1,
+   r > 1). The Property ranges already prevent this; the guard is insurance for
+   the day the ranges are loosened.
+5. **Numerical vs. closed-form η** — see "The standing η cross-check" above.
 
-## Testing (fleet layout — keep when forking)
+## Testing
 
-| Path | Purpose |
+| Path | Covers |
 |---|---|
-| `vitest.config.ts` | `happy-dom`; `setupFiles: ["./tests/setup.ts"]`; `execArgv: ["--expose-gc"]` |
-| `tests/setup.ts` | Canvas/AudioContext mocks + `init()` before SceneryStack imports |
-| `tests/TimeModel.test.ts` | **Replace** with real model/physics tests mirroring `src/` |
-| `tests/memory-leak.test.ts` | WeakRef + `forceGC` dispose regression |
-| `tests/fuzz/fuzz.spec.ts` | Optional Playwright smoke via `?fuzz` |
+| `tests/carnotCycleGeometry.test.ts` | corner points against hand-computed values, both isothermal legs sweeping the same ratio, ∮P dV vs. the closed form across the parameter space, finiteness at every range extreme, leg parametrization |
+| `tests/CarnotCycleModel.test.ts` | the temperature clamp, the stage stepper (never skips, wraps correctly, previous inverts next, in both directions), continuous stepping including huge dt, direction-aware process naming, COP, γ-change snapping, reset |
+| `tests/memory-leak.test.ts` | WeakRef + `forceGC` dispose regression (fleet pattern) |
+| `tests/fuzz/fuzz.spec.ts` | Playwright fuzz smoke via joist `?fuzz` |
 
-Run `npm test`. Expand `memory-leak.test.ts` when adding runtime-created nodes or Property links.
+The stage-stepper tests are the ones with teeth: "next" is the control the Intro
+screen leans on to teach the leg order, so a stepper that skipped a leg or
+wrapped the wrong way would quietly teach the wrong sequence.
 
-## Multi-screen simulations
+## Known gaps / future work
 
-Default is single-screen. To add screens, see **`doc/multi-screen.md`**: per-screen folders mirroring
-`src/sim-screen/`, `StringManager` screen-name getters, optional shared root model, a shared
-`src/common/{SimName}ScreenIcons.ts` module (`create{Screen}Icon()` factories wired as
-`homeScreenIcon` / `navigationBarIcon`), and register all screens in `main.ts`.
-
-## PWA
-
-After `npm run build`, the sim is installable offline via Workbox (`dist/manifest.webmanifest`).
-
-## Known template stubs (remove when forking)
-
-- `SimModel.step()` / `reset()` — empty placeholders until you add physics.
-- Placeholder play-area content in `SimScreenView` — replace with real UI.
-- `tests/TimeModel.test.ts` — sample only; add tests for your model under `tests/`.
+- `n` is exposed as a Property but has no UI. It cancels out of η, so a slider
+  would mostly demonstrate that nothing happens — which is arguably worth
+  showing, but not in v1.
+- `PVDiagramNode` / `TSDiagramNode` would be the natural seed of a shared
+  cycle-diagram package once a second cycle-based sim exists.
+- The Efficiency Lab's Measure mode accepts a single numeric answer; it does not
+  ask the student to show the Q_hot and W they read off.

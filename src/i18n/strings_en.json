@@ -1,21 +1,157 @@
 {
-  "title": "SceneryStack Template",
+  "title": "Carnot Heat Engine",
   "screens": {
-    "sim": "Sim"
+    "intro": "Intro",
+    "efficiencyLab": "Efficiency Lab",
+    "reversedCycle": "Reversed Cycle"
+  },
+  "units": {
+    "kelvin": "K",
+    "kilopascal": "kPa",
+    "liter": "L",
+    "kilojoule": "kJ",
+    "joulePerKelvin": "J/K",
+    "percent": "%"
+  },
+  "stages": {
+    "isothermalExpansionHot": "Isothermal Expansion (Hot)",
+    "isothermalCompressionHot": "Isothermal Compression (Hot)",
+    "isothermalExpansionCold": "Isothermal Expansion (Cold)",
+    "isothermalCompressionCold": "Isothermal Compression (Cold)",
+    "adiabaticExpansion": "Adiabatic Expansion",
+    "adiabaticCompression": "Adiabatic Compression"
+  },
+  "controls": {
+    "hotTemperature": "Hot Reservoir T",
+    "coldTemperature": "Cold Reservoir T",
+    "expansionRatio": "Expansion Ratio V<sub>2</sub>/V<sub>1</sub>",
+    "gas": "Gas",
+    "monatomic": "Monatomic (γ = 5/3)",
+    "diatomic": "Diatomic (γ = 7/5)",
+    "stage": "Stage",
+    "showPreviousCycle": "Show Previous Cycle",
+    "showEntropyDiagram": "Show T–S Diagram",
+    "showCarnotLimit": "Show Carnot Limit Curve",
+    "explore": "Explore",
+    "measure": "Measure",
+    "yourEfficiency": "Your η",
+    "check": "Check",
+    "cooling": "Cooling (Refrigerator)",
+    "heating": "Heating (Heat Pump)"
+  },
+  "readouts": {
+    "pressure": "P",
+    "volume": "V",
+    "temperature": "T",
+    "qHot": "Q<sub>h</sub>",
+    "qCold": "Q<sub>c</sub>",
+    "work": "W",
+    "workIn": "W in",
+    "efficiency": "η",
+    "efficiencyFormula": "η = 1 − T<sub>c</sub>/T<sub>h</sub>",
+    "carnotLimit": "Carnot limit",
+    "cop": "COP",
+    "copCoolingFormula": "COP = T<sub>c</sub>/(T<sub>h</sub> − T<sub>c</sub>)",
+    "copHeatingFormula": "COP = T<sub>h</sub>/(T<sub>h</sub> − T<sub>c</sub>)",
+    "heatRemoved": "Heat removed from cold",
+    "heatDelivered": "Heat delivered to hot",
+    "heatRemovedShort": "Q<sub>c</sub> removed",
+    "heatDeliveredShort": "Q<sub>h</sub> delivered",
+    "volumeSpan": "V<sub>max</sub>/V<sub>min</sub>",
+    "hidden": "—",
+    "correct": "Within 2 points — nicely read.",
+    "incorrect": "Not within 2 points. Compare and try again."
+  },
+  "diagrams": {
+    "pvTitle": "Pressure–Volume",
+    "pvXAxis": "V (L)",
+    "pvYAxis": "P (kPa)",
+    "tsTitle": "Temperature–Entropy",
+    "tsXAxis": "S (J/K)",
+    "tsYAxis": "T (K)",
+    "limitTitle": "η vs. T<sub>c</sub>"
+  },
+  "apparatus": {
+    "hotReservoir": "Hot Reservoir",
+    "coldReservoir": "Cold Reservoir",
+    "insulated": "Insulated",
+    "heatIn": "Q in",
+    "heatOut": "Q out",
+    "workOut": "W out",
+    "workIn": "W in"
+  },
+  "energyFlow": {
+    "title": "Energy Flow",
+    "engineCaption": "Q<sub>h</sub> in splits into W out and Q<sub>c</sub> out.",
+    "refrigeratorCaption": "W in plus Q<sub>c</sub> in leaves as Q<sub>h</sub> out."
   },
   "a11y": {
-    "screenSummary": {
-      "playArea": "The play area shows the main simulation content.",
-      "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
-      "interactionHint": "Explore the simulation by interacting with its controls."
+    "intro": {
+      "screenSummary": {
+        "playArea": "The play area shows a piston and cylinder on the left and a pressure–volume diagram on the right. A hot reservoir and a cold reservoir dock against the cylinder during the isothermal legs of the cycle, and an insulating sleeve wraps it during the adiabatic legs. A marker traces the same state on the diagram.",
+        "controlArea": "The control area has sliders for the two reservoir temperatures, a gas selector, a stage stepper that moves one leg of the cycle at a time, play and speed controls, and a Reset All button.",
+        "interactionHint": "Use the stage stepper to walk through the four legs one at a time, and watch where heat enters and leaves."
+      },
+      "currentDetails": "{{stage}}. Pressure {{pressure}} kilopascals, volume {{volume}} liters, temperature {{temperature}} kelvin.",
+      "controls": {
+        "hotTemperature": "Hot reservoir temperature",
+        "hotTemperatureHelp": "Sets the temperature of the reservoir the gas touches while expanding isothermally.",
+        "coldTemperature": "Cold reservoir temperature",
+        "coldTemperatureHelp": "Sets the temperature of the reservoir the gas rejects heat to. Always stays at least 50 kelvin below the hot reservoir.",
+        "expansionRatio": "Expansion ratio",
+        "expansionRatioHelp": "How far the gas expands along each isothermal leg. This plus the two temperatures fixes the whole cycle.",
+        "gas": "Gas in the cylinder",
+        "gasHelp": "Monatomic and diatomic gases have different heat-capacity ratios, which changes the steepness of the adiabatic legs but not the efficiency.",
+        "firstStage": "Go to first leg",
+        "previousStage": "Go to previous leg",
+        "nextStage": "Go to next leg",
+        "lastStage": "Go to last leg"
+      }
     },
-    "currentDetails": "The simulation is in its initial state.",
-    "controls": {
-      "exampleControl": "Example control"
+    "efficiencyLab": {
+      "screenSummary": {
+        "playArea": "The play area shows a pressure–volume diagram of the cycle, an energy-flow panel splitting the heat drawn from the hot reservoir into work out and heat rejected to the cold reservoir, and an optional temperature–entropy diagram where the same cycle is a rectangle.",
+        "controlArea": "The control area has sliders for the two reservoir temperatures and the expansion ratio, checkboxes for the previous-cycle overlay, the temperature–entropy diagram and the Carnot limit curve, a mode switch between Explore and Measure, and a Reset All button.",
+        "interactionHint": "Switch to Measure mode to read the heat and work off the diagram and compute the efficiency yourself before revealing it."
+      },
+      "currentDetails": "Heat in {{qHot}} kilojoules, work out {{work}} kilojoules, heat out {{qCold}} kilojoules. {{efficiency}}",
+      "efficiencyKnown": "Efficiency {{value}} percent.",
+      "efficiencyHidden": "Efficiency is hidden until you check your answer.",
+      "controls": {
+        "hotTemperature": "Hot reservoir temperature",
+        "coldTemperature": "Cold reservoir temperature",
+        "expansionRatio": "Expansion ratio",
+        "showPreviousCycle": "Show the previous cycle as a ghosted overlay",
+        "showEntropyDiagram": "Show the temperature–entropy diagram",
+        "showCarnotLimit": "Show the Carnot limit curve",
+        "mode": "Value display mode",
+        "modeHelp": "Explore shows every value live. Measure hides the efficiency until you enter your own and press Check.",
+        "yourEfficiency": "Your computed efficiency, in percent",
+        "check": "Check my efficiency"
+      }
+    },
+    "reversedCycle": {
+      "screenSummary": {
+        "playArea": "The play area shows the same Carnot cycle run backwards on a pressure–volume diagram, with the arrows reversed, and an energy-flow panel where work in and heat drawn from the cold reservoir both leave as heat delivered to the hot reservoir.",
+        "controlArea": "The control area has sliders for the two reservoir temperatures and the expansion ratio, a switch between cooling and heating framing, play and speed controls, and a Reset All button.",
+        "interactionHint": "Compare this with the Intro screen: the same four legs, traversed the other way round."
+      },
+      "currentDetails": "{{stage}}. Work in {{work}} kilojoules, {{usefulLabel}} {{usefulHeat}} kilojoules, coefficient of performance {{cop}}.",
+      "controls": {
+        "hotTemperature": "Hot reservoir temperature",
+        "coldTemperature": "Cold reservoir temperature",
+        "expansionRatio": "Expansion ratio",
+        "framing": "What counts as the useful output",
+        "framingHelp": "Cooling treats the heat pulled from the cold reservoir as the goal; heating treats the heat delivered to the hot reservoir as the goal.",
+        "firstStage": "Go to first leg",
+        "previousStage": "Go to previous leg",
+        "nextStage": "Go to next leg",
+        "lastStage": "Go to last leg"
+      }
     }
   },
   "preferences": {
     "title": "Simulation",
-    "exampleToggle": "Example Toggle"
+    "showCornerLabels": "Label cycle corners 1–4"
   }
 }
