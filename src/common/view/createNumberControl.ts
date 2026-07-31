@@ -18,7 +18,7 @@ import { DerivedProperty, type PhetioProperty, type TReadOnlyProperty } from "sc
 import { Dimension2, type Range } from "scenerystack/dot";
 import { NumberControl, type NumberControlOptions } from "scenerystack/scenery-phet";
 import CarnotHeatEngineColors from "../../CarnotHeatEngineColors.js";
-import { FLAT_RECTANGULAR_BUTTON_OPTIONS } from "../CarnotHeatEngineButtonOptions.js";
+import { FLAT_RECTANGULAR_BUTTON_OPTIONS, LIGHT_SURFACE_TEXT_FILL } from "../CarnotHeatEngineButtonOptions.js";
 
 export type CreateNumberControlOptions = {
   /** Localized unit suffix appended after the value (e.g. "K", "kPa"). */
@@ -71,7 +71,10 @@ export const createNumberControl = (
       decimalPlaces,
       useRichText: true,
       textOptions: {
-        fill: CarnotHeatEngineColors.textColorProperty,
+        // NumberDisplay paints its value on a white background rectangle, so the
+        // value must use the light-surface text colour, not the panel text colour
+        // (near-white in default mode) — otherwise it is invisible on white.
+        fill: LIGHT_SURFACE_TEXT_FILL,
       },
       ...(valuePattern ? { valuePattern } : {}),
     },

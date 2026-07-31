@@ -119,6 +119,16 @@ export class TimeModel {
     this.timeProperty.value += dt;
   }
 
+  /**
+   * Rewind the clock by dt seconds whether or not it is running. The symmetric
+   * counterpart to {@link stepForward}: this is what a step-backward button
+   * needs. Screen models pair this with `cycle.step( -dt )` so the playhead
+   * walks the cycle one frame in reverse.
+   */
+  public stepBackward(dt: number): void {
+    this.timeProperty.value -= dt;
+  }
+
   /** Resets clock and playback state to their initial values. */
   public reset(): void {
     this.isPlayingProperty.reset();

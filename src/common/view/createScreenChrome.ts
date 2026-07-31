@@ -24,12 +24,13 @@ import { DEFAULT_TIME_SPEEDS, type TimeModel } from "../TimeModel.js";
 
 /**
  * Any model that drives the shared chrome: a {@link TimeModel} for play/pause
- * and speed, plus a `stepForward` hook for the step-forward button. All three
- * screen models satisfy this.
+ * and speed, plus `stepForward` / `stepBackward` hooks for the step buttons.
+ * All three screen models satisfy this.
  */
 type ChromeModel = {
   readonly timer: TimeModel;
   stepForward(dt: number): void;
+  stepBackward(dt: number): void;
 };
 
 /** Full-screen background fill behind a screen's content. */
@@ -39,9 +40,10 @@ export const createBackgroundFill = (layoutBounds: Bounds2): Rectangle =>
   });
 
 /**
- * The shared TimeControlNode: play/pause + step + the speed radio group, in the
- * sim's flat style. The step-forward button advances the model by one ~60 Hz
- * frame; it is only ever pressed while paused, so it bypasses the scaled dt.
+ * The shared TimeControlNode: step-backward + play/pause + step-forward + the
+ * speed radio group, in the sim's flat style. Each step button advances or
+ * rewinds the model by one ~60 Hz frame; they are only ever pressed while
+ * paused, so they bypass the scaled dt.
  */
 export const createTimeControlNode = (model: ChromeModel): TimeControlNode =>
   new TimeControlNode(model.timer.isPlayingProperty, {
@@ -50,9 +52,14 @@ export const createTimeControlNode = (model: ChromeModel): TimeControlNode =>
     ...TIME_CONTROL_SPEED_RADIO_OPTIONS,
     playPauseStepButtonOptions: {
       ...FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS,
+      includeStepBackwardButton: true,
       stepForwardButtonOptions: {
         ...FLAT_RECTANGULAR_BUTTON_OPTIONS,
         listener: () => model.stepForward(STEP_FORWARD_DT_SECONDS),
+      },
+      stepBackwardButtonOptions: {
+        ...FLAT_RECTANGULAR_BUTTON_OPTIONS,
+        listener: () => model.stepBackward(STEP_FORWARD_DT_SECONDS),
       },
     },
   });

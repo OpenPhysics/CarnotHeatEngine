@@ -55,6 +55,12 @@ export class ReversedCycleModel implements TModel {
     this.cycle.step(dt);
   }
 
+  /** Rewind one frame while paused — what the step-backward button needs. */
+  public stepBackward(dt: number): void {
+    this.timer.stepBackward(dt);
+    this.cycle.step(-dt);
+  }
+
   public reset(): void {
     this.cycle.reset();
     this.timer.reset();
