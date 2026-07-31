@@ -11,6 +11,7 @@ import { HSeparator, type Node, RichText, Text, VBox } from "scenerystack/scener
 import { AquaRadioButtonGroup, Checkbox } from "scenerystack/sun";
 import CarnotHeatEngineColors from "../../CarnotHeatEngineColors.js";
 import { READOUT_FONT } from "../../CarnotHeatEngineConstants.js";
+import { LIGHT_SURFACE_TEXT_FILL } from "../../common/CarnotHeatEngineButtonOptions.js";
 import { CarnotHeatEnginePanel } from "../../common/CarnotHeatEnginePanel.js";
 import { CycleParameterControls } from "../../common/view/CycleParameterControls.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -113,7 +114,10 @@ const createCheckbox = (
       maxWidth: 190,
     }),
     {
-      checkboxColor: CarnotHeatEngineColors.textColorProperty,
+      // The checkbox glyph is painted on the white checkboxColorBackground, so it
+      // must use the light-surface text colour, not the panel text colour
+      // (near-white in default mode) — otherwise the glyph is invisible on white.
+      checkboxColor: LIGHT_SURFACE_TEXT_FILL,
       checkboxColorBackground: CarnotHeatEngineColors.controlSurfaceColorProperty,
       spacing: 8,
       accessibleName,
