@@ -19,12 +19,13 @@ import { Multilink, type TReadOnlyProperty } from "scenerystack/axon";
 import { LinePlot } from "scenerystack/bamboo";
 import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
+import { combineOptions } from "scenerystack/phet-core";
 import { Circle, type NodeOptions, Path } from "scenerystack/scenery";
 import CarnotHeatEngineColors from "../../CarnotHeatEngineColors.js";
 import { PLAYHEAD_RADIUS } from "../../CarnotHeatEngineConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { CycleGeometry, CycleState } from "../model/carnotCycleGeometry.js";
-import { CycleDiagramNode } from "./CycleDiagramNode.js";
+import { CycleDiagramNode, type CycleDiagramNodeOptions } from "./CycleDiagramNode.js";
 import { padRange } from "./chartUtils.js";
 
 /** A cycle state as a plotted (S, T) point. Entropy is already in J/K. */
@@ -48,13 +49,17 @@ export class TSDiagramNode extends CycleDiagramNode {
   public constructor(providedOptions: TSDiagramNodeOptions) {
     const diagramStrings = StringManager.getInstance().getDiagrams();
 
-    super({
-      titleProperty: diagramStrings.tsTitleStringProperty,
-      xAxisLabelProperty: diagramStrings.tsXAxisStringProperty,
-      yAxisLabelProperty: diagramStrings.tsYAxisStringProperty,
-      targetDivisions: 4,
-      ...(providedOptions.nodeOptions && { nodeOptions: providedOptions.nodeOptions }),
-    });
+    super(
+      combineOptions<CycleDiagramNodeOptions>(
+        {
+          titleProperty: diagramStrings.tsTitleStringProperty,
+          xAxisLabelProperty: diagramStrings.tsXAxisStringProperty,
+          yAxisLabelProperty: diagramStrings.tsYAxisStringProperty,
+          targetDivisions: 4,
+        },
+        providedOptions.nodeOptions !== undefined ? { nodeOptions: providedOptions.nodeOptions } : {},
+      ),
+    );
 
     this.geometryProperty = providedOptions.geometryProperty;
 

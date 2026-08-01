@@ -18,8 +18,8 @@
  * checkboxes are how the screen grows with them.
  */
 
-import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
+import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { INTER_ELEMENT_GAP, SCREEN_VIEW_MARGIN } from "../../CarnotHeatEngineConstants.js";
 import {
   createBackgroundFill,
@@ -48,16 +48,21 @@ const MEASURE_PANEL_TOP_OFFSET = 150;
 /** Gap between the time control and the reset button, px. */
 const TIME_CONTROL_TO_RESET_GAP = 24;
 
+export type EfficiencyLabScreenViewOptions = ScreenViewOptions;
+
 export class EfficiencyLabScreenView extends ScreenView {
   public constructor(
     model: EfficiencyLabModel,
     preferences: CarnotHeatEnginePreferencesModel,
-    options?: ScreenViewOptions,
+    providedOptions?: EfficiencyLabScreenViewOptions,
   ) {
-    super({
-      screenSummaryContent: new EfficiencyLabScreenSummaryContent(model),
-      ...options,
-    });
+    const options = optionize<EfficiencyLabScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new EfficiencyLabScreenSummaryContent(model),
+      },
+      providedOptions,
+    );
+    super(options);
 
     const backgroundRect = createBackgroundFill(this.layoutBounds);
     this.addChild(backgroundRect);

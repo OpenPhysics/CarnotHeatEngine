@@ -17,8 +17,8 @@
  *                                        Reset All ↘
  */
 
-import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
+import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { SCREEN_VIEW_MARGIN } from "../../CarnotHeatEngineConstants.js";
 import {
   createBackgroundFill,
@@ -44,12 +44,21 @@ const APPARATUS_TOP_INSET = 95;
 /** Gap between the PV diagram and the right-anchored control panel. */
 const DIAGRAM_TO_PANEL_GAP = 16;
 
+export type IntroScreenViewOptions = ScreenViewOptions;
+
 export class IntroScreenView extends ScreenView {
-  public constructor(model: IntroModel, preferences: CarnotHeatEnginePreferencesModel, options?: ScreenViewOptions) {
-    super({
-      screenSummaryContent: new IntroScreenSummaryContent(model),
-      ...options,
-    });
+  public constructor(
+    model: IntroModel,
+    preferences: CarnotHeatEnginePreferencesModel,
+    providedOptions?: IntroScreenViewOptions,
+  ) {
+    const options = optionize<IntroScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new IntroScreenSummaryContent(model),
+      },
+      providedOptions,
+    );
+    super(options);
 
     const backgroundRect = createBackgroundFill(this.layoutBounds);
     this.addChild(backgroundRect);

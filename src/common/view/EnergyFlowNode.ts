@@ -17,7 +17,17 @@
 
 import { DerivedProperty, Multilink, type TReadOnlyProperty } from "scenerystack/axon";
 import { Bounds2 } from "scenerystack/dot";
-import { AlignBox, HBox, type Node, type NodeOptions, Rectangle, RichText, VBox } from "scenerystack/scenery";
+import { combineOptions } from "scenerystack/phet-core";
+import {
+  AlignBox,
+  HBox,
+  type Node,
+  type NodeOptions,
+  Rectangle,
+  RichText,
+  VBox,
+  type VBoxOptions,
+} from "scenerystack/scenery";
 import CarnotHeatEngineColors from "../../CarnotHeatEngineColors.js";
 import { READOUT_FONT, SECTION_HEADING_FONT } from "../../CarnotHeatEngineConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -32,7 +42,7 @@ const BAR_HEIGHT = 22;
 /** Smallest drawable segment width, px — keeps a near-zero segment visible. */
 const MIN_SEGMENT_WIDTH = 1;
 
-export type EnergyFlowNodeOptions = {
+type EnergyFlowNodeSelfOptions = {
   /** Heat exchanged with the hot reservoir per cycle, J (always positive). */
   qHotProperty: TReadOnlyProperty<number>;
   /** Heat exchanged with the cold reservoir per cycle, J (always positive). */
@@ -45,8 +55,12 @@ export type EnergyFlowNodeOptions = {
   nodeOptions?: NodeOptions;
 };
 
+export type EnergyFlowNodeOptions = EnergyFlowNodeSelfOptions;
+
 export class EnergyFlowNode extends VBox {
   public constructor(providedOptions: EnergyFlowNodeOptions) {
+    const options = combineOptions<EnergyFlowNodeOptions>({}, providedOptions);
+
     const strings = StringManager.getInstance();
     const energyFlowStrings = strings.getEnergyFlow();
     const readoutStrings = strings.getReadouts();
@@ -90,7 +104,7 @@ export class EnergyFlowNode extends VBox {
     const caption = new RichText(
       new DerivedProperty(
         [
-          providedOptions.directionProperty,
+          options.directionProperty,
           energyFlowStrings.engineCaptionStringProperty,
           energyFlowStrings.refrigeratorCaptionStringProperty,
         ],
@@ -104,24 +118,25 @@ export class EnergyFlowNode extends VBox {
       },
     );
 
-    super({
-      align: "left",
-      spacing: 8,
-      children: [heading, qHotRow, splitRow, caption],
-      ...providedOptions.nodeOptions,
-    });
+    super(
+      combineOptions<VBoxOptions>(
+        {
+          align: "left",
+          spacing: 8,
+          children: [heading, qHotRow, splitRow, caption],
+        },
+        options.nodeOptions,
+      ),
+    );
 
     // Q_hot is the reference length; W and Q_cold divide it in proportion. The
     // guard is for the degenerate Q_hot → 0 case, which the ranges exclude but
     // which would otherwise produce a NaN width.
-    Multilink.multilink(
-      [providedOptions.qHotProperty, providedOptions.workProperty, providedOptions.qColdProperty],
-      (qHot, work, qCold) => {
-        const scale = Number.isFinite(qHot) && qHot > 0 ? BAR_WIDTH / qHot : 0;
-        workSegment.rectWidth = Math.max(MIN_SEGMENT_WIDTH, work * scale);
-        qColdSegment.rectWidth = Math.max(MIN_SEGMENT_WIDTH, qCold * scale);
-      },
-    );
+    Multilink.multilink([options.qHotProperty, options.workProperty, options.qColdProperty], (qHot, work, qCold) => {
+      const scale = Number.isFinite(qHot) && qHot > 0 ? BAR_WIDTH / qHot : 0;
+      workSegment.rectWidth = Math.max(MIN_SEGMENT_WIDTH, work * scale);
+      qColdSegment.rectWidth = Math.max(MIN_SEGMENT_WIDTH, qCold * scale);
+    });
   }
 }
 

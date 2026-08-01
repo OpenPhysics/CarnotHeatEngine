@@ -22,7 +22,7 @@
 import type { TReadOnlyProperty } from "scenerystack/axon";
 import { AxisLine, ChartRectangle, ChartTransform, GridLineSet, TickLabelSet, TickMarkSet } from "scenerystack/bamboo";
 import type { Range } from "scenerystack/dot";
-import { Orientation } from "scenerystack/phet-core";
+import { combineOptions, Orientation } from "scenerystack/phet-core";
 import { Node, type NodeOptions, RichText, Text } from "scenerystack/scenery";
 import CarnotHeatEngineColors from "../../CarnotHeatEngineColors.js";
 import {
@@ -37,7 +37,7 @@ import {
 } from "../../CarnotHeatEngineConstants.js";
 import { decimalPlacesForStep, formatTickValue, niceStep } from "./chartUtils.js";
 
-export type CycleDiagramNodeOptions = {
+type CycleDiagramNodeSelfOptions = {
   /** Diagram heading, drawn above the plotting area. May contain `<sub>` markup. */
   titleProperty: TReadOnlyProperty<string>;
   /** Horizontal axis label including its unit, e.g. "V (L)". */
@@ -55,6 +55,8 @@ export type CycleDiagramNodeOptions = {
   /** Extra Node options (position, visibility, …). */
   nodeOptions?: NodeOptions;
 };
+
+export type CycleDiagramNodeOptions = CycleDiagramNodeSelfOptions;
 
 export class CycleDiagramNode extends Node {
   /** Maps display-unit values to pixels inside the plotting area. */
@@ -83,10 +85,19 @@ export class CycleDiagramNode extends Node {
   private yDecimalPlaces = 0;
 
   public constructor(providedOptions: CycleDiagramNodeOptions) {
-    const viewWidth = providedOptions.viewWidth ?? DIAGRAM_VIEW_WIDTH;
-    const viewHeight = providedOptions.viewHeight ?? DIAGRAM_VIEW_HEIGHT;
-    const targetDivisions = providedOptions.targetDivisions ?? 5;
-    const showGrid = providedOptions.showGrid ?? true;
+    const options = combineOptions<CycleDiagramNodeOptions>(
+      {
+        viewWidth: DIAGRAM_VIEW_WIDTH,
+        viewHeight: DIAGRAM_VIEW_HEIGHT,
+        targetDivisions: 5,
+        showGrid: true,
+      },
+      providedOptions,
+    );
+    const viewWidth = options.viewWidth ?? DIAGRAM_VIEW_WIDTH;
+    const viewHeight = options.viewHeight ?? DIAGRAM_VIEW_HEIGHT;
+    const targetDivisions = options.targetDivisions ?? 5;
+    const showGrid = options.showGrid ?? true;
 
     super();
 
@@ -177,7 +188,7 @@ export class CycleDiagramNode extends Node {
     });
     this.addChild(chartGroup);
 
-    const titleText = new RichText(providedOptions.titleProperty, {
+    const titleText = new RichText(options.titleProperty, {
       font: DIAGRAM_TITLE_FONT,
       fill: CarnotHeatEngineColors.textColorProperty,
       maxWidth: viewWidth,
@@ -186,7 +197,7 @@ export class CycleDiagramNode extends Node {
     });
     this.addChild(titleText);
 
-    const xAxisLabel = new RichText(providedOptions.xAxisLabelProperty, {
+    const xAxisLabel = new RichText(options.xAxisLabelProperty, {
       font: DIAGRAM_TITLE_FONT,
       fill: CarnotHeatEngineColors.secondaryTextColorProperty,
       maxWidth: viewWidth,
@@ -195,7 +206,7 @@ export class CycleDiagramNode extends Node {
     });
     this.addChild(xAxisLabel);
 
-    const yAxisLabel = new RichText(providedOptions.yAxisLabelProperty, {
+    const yAxisLabel = new RichText(options.yAxisLabelProperty, {
       font: DIAGRAM_TITLE_FONT,
       fill: CarnotHeatEngineColors.secondaryTextColorProperty,
       maxWidth: viewHeight,
@@ -214,7 +225,7 @@ export class CycleDiagramNode extends Node {
       }),
     );
 
-    this.mutate(providedOptions.nodeOptions);
+    this.mutate(options.nodeOptions);
   }
 
   /** The plotting area's size in pixels — subclasses size overlays against it. */

@@ -13,6 +13,7 @@
 import { Multilink, type TReadOnlyProperty } from "scenerystack/axon";
 import { LinePlot } from "scenerystack/bamboo";
 import { Range, Vector2 } from "scenerystack/dot";
+import { combineOptions } from "scenerystack/phet-core";
 import { Circle, type NodeOptions } from "scenerystack/scenery";
 import CarnotHeatEngineColors from "../../CarnotHeatEngineColors.js";
 import {
@@ -22,7 +23,7 @@ import {
   MIN_TEMPERATURE_GAP,
   T_COLD_RANGE,
 } from "../../CarnotHeatEngineConstants.js";
-import { CycleDiagramNode } from "../../common/view/CycleDiagramNode.js";
+import { CycleDiagramNode, type CycleDiagramNodeOptions } from "../../common/view/CycleDiagramNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
 
 export type CarnotLimitInsetNodeOptions = {
@@ -40,18 +41,22 @@ export class CarnotLimitInsetNode extends CycleDiagramNode {
     const diagramStrings = strings.getDiagrams();
     const units = strings.getUnits();
 
-    super({
-      titleProperty: diagramStrings.limitTitleStringProperty,
-      // The title carries the quantity names (T_cold, η); the axes show just
-      // their units, which is enough at this size without crowding the plot.
-      xAxisLabelProperty: units.kelvinStringProperty,
-      yAxisLabelProperty: units.percentStringProperty,
-      viewWidth: INSET_VIEW_WIDTH,
-      viewHeight: INSET_VIEW_HEIGHT,
-      targetDivisions: 3,
-      showGrid: false,
-      ...(providedOptions.nodeOptions && { nodeOptions: providedOptions.nodeOptions }),
-    });
+    super(
+      combineOptions<CycleDiagramNodeOptions>(
+        {
+          titleProperty: diagramStrings.limitTitleStringProperty,
+          // The title carries the quantity names (T_cold, η); the axes show just
+          // their units, which is enough at this size without crowding the plot.
+          xAxisLabelProperty: units.kelvinStringProperty,
+          yAxisLabelProperty: units.percentStringProperty,
+          viewWidth: INSET_VIEW_WIDTH,
+          viewHeight: INSET_VIEW_HEIGHT,
+          targetDivisions: 3,
+          showGrid: false,
+        },
+        providedOptions.nodeOptions !== undefined ? { nodeOptions: providedOptions.nodeOptions } : {},
+      ),
+    );
 
     const curve = new LinePlot(this.chartTransform, [], {
       stroke: CarnotHeatEngineColors.accentColorProperty,

@@ -16,11 +16,12 @@
 
 import { DerivedProperty, type PhetioProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { Dimension2, type Range } from "scenerystack/dot";
-import { NumberControl, type NumberControlOptions } from "scenerystack/scenery-phet";
+import { combineOptions } from "scenerystack/phet-core";
+import { NumberControl, type NumberControlOptions, type NumberDisplayOptions } from "scenerystack/scenery-phet";
 import CarnotHeatEngineColors from "../../CarnotHeatEngineColors.js";
 import { FLAT_RECTANGULAR_BUTTON_OPTIONS, LIGHT_SURFACE_TEXT_FILL } from "../CarnotHeatEngineButtonOptions.js";
 
-export type CreateNumberControlOptions = {
+type CreateNumberControlSelfOptions = {
   /** Localized unit suffix appended after the value (e.g. "K", "kPa"). */
   unitsProperty?: TReadOnlyProperty<string>;
   /** Digits shown after the decimal point in the readout (default 0). */
@@ -37,13 +38,21 @@ export type CreateNumberControlOptions = {
   numberControlOptions?: NumberControlOptions;
 };
 
+export type CreateNumberControlOptions = CreateNumberControlSelfOptions;
+
 export const createNumberControl = (
   titleProperty: TReadOnlyProperty<string>,
   numberProperty: PhetioProperty<number>,
   range: Range,
   providedOptions?: CreateNumberControlOptions,
 ): NumberControl => {
-  const options = providedOptions ?? {};
+  const options = combineOptions<CreateNumberControlOptions>(
+    {
+      decimalPlaces: 0,
+      trackWidth: 150,
+    },
+    providedOptions,
+  );
   const decimalPlaces = options.decimalPlaces ?? 0;
   const delta = options.delta ?? (range.max - range.min) / 100;
   const trackWidth = options.trackWidth ?? 150;
@@ -53,32 +62,40 @@ export const createNumberControl = (
     ? new DerivedProperty([options.unitsProperty], (units) => `{{value}} ${units}`)
     : undefined;
 
-  return new NumberControl(titleProperty, numberProperty, range, {
-    delta,
-    accessibleName: options.accessibleName ?? titleProperty,
-    // Titles carry <sub> markup (V₂/V₁, T_hot); without this they render literally.
+  const numberDisplayBase: NumberDisplayOptions = {
+    decimalPlaces,
     useRichText: true,
-    ...(options.accessibleHelpText && { accessibleHelpText: options.accessibleHelpText }),
-    titleNodeOptions: {
-      fill: CarnotHeatEngineColors.textColorProperty,
-      maxWidth: 170,
+    textOptions: {
+      fill: LIGHT_SURFACE_TEXT_FILL,
     },
-    sliderOptions: {
-      trackSize: new Dimension2(trackWidth, 4),
-      thumbFill: CarnotHeatEngineColors.accentColorProperty,
-    },
-    numberDisplayOptions: {
-      decimalPlaces,
-      useRichText: true,
-      textOptions: {
-        // NumberDisplay paints its value on a white background rectangle, so the
-        // value must use the light-surface text colour, not the panel text colour
-        // (near-white in default mode) — otherwise it is invisible on white.
-        fill: LIGHT_SURFACE_TEXT_FILL,
+  };
+  const numberDisplayOptions = valuePattern
+    ? combineOptions<NumberDisplayOptions>(numberDisplayBase, { valuePattern })
+    : numberDisplayBase;
+
+  return new NumberControl(
+    titleProperty,
+    numberProperty,
+    range,
+    combineOptions<NumberControlOptions>(
+      {
+        delta,
+        accessibleName: options.accessibleName ?? titleProperty,
+        // Titles carry <sub> markup (V₂/V₁, T_hot); without this they render literally.
+        useRichText: true,
+        titleNodeOptions: {
+          fill: CarnotHeatEngineColors.textColorProperty,
+          maxWidth: 170,
+        },
+        sliderOptions: {
+          trackSize: new Dimension2(trackWidth, 4),
+          thumbFill: CarnotHeatEngineColors.accentColorProperty,
+        },
+        numberDisplayOptions,
+        arrowButtonOptions: FLAT_RECTANGULAR_BUTTON_OPTIONS,
       },
-      ...(valuePattern ? { valuePattern } : {}),
-    },
-    arrowButtonOptions: FLAT_RECTANGULAR_BUTTON_OPTIONS,
-    ...options.numberControlOptions,
-  });
+      options.accessibleHelpText ? { accessibleHelpText: options.accessibleHelpText } : {},
+      options.numberControlOptions,
+    ),
+  );
 };

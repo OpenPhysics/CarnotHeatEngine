@@ -13,7 +13,8 @@
  */
 
 import type { TReadOnlyProperty } from "scenerystack/axon";
-import { type Node, type NodeOptions, VBox } from "scenerystack/scenery";
+import { combineOptions } from "scenerystack/phet-core";
+import { type Node, type NodeOptions, VBox, type VBoxOptions } from "scenerystack/scenery";
 import { COMPRESSION_RATIO_RANGE, T_COLD_RANGE, T_HOT_RANGE } from "../../CarnotHeatEngineConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { CarnotCycleModel } from "../model/CarnotCycleModel.js";
@@ -29,12 +30,14 @@ export type CycleParameterA11yStrings = {
   readonly expansionRatioStringProperty: TReadOnlyProperty<string>;
 };
 
-export type CycleParameterControlsOptions = {
+type CycleParameterControlsSelfOptions = {
   /** Whether to include the expansion-ratio slider (off on the Intro screen). */
   includeExpansionRatio?: boolean;
   /** Extra Node options. */
   nodeOptions?: NodeOptions;
 };
+
+export type CycleParameterControlsOptions = CycleParameterControlsSelfOptions;
 
 export class CycleParameterControls extends VBox {
   /** The sliders in tab order, for the ScreenView's pdomOrder. */
@@ -45,6 +48,8 @@ export class CycleParameterControls extends VBox {
     a11y: CycleParameterA11yStrings,
     providedOptions?: CycleParameterControlsOptions,
   ) {
+    const options = combineOptions<CycleParameterControlsOptions>({ includeExpansionRatio: true }, providedOptions);
+
     const strings = StringManager.getInstance();
     const controlStrings = strings.getControls();
     const units = strings.getUnits();
@@ -71,7 +76,7 @@ export class CycleParameterControls extends VBox {
     );
 
     const controls: Node[] = [hotControl, coldControl];
-    if (providedOptions?.includeExpansionRatio !== false) {
+    if (options.includeExpansionRatio !== false) {
       controls.push(
         createNumberControl(
           controlStrings.expansionRatioStringProperty,
@@ -86,12 +91,16 @@ export class CycleParameterControls extends VBox {
       );
     }
 
-    super({
-      children: controls,
-      align: "center",
-      spacing: 6,
-      ...providedOptions?.nodeOptions,
-    });
+    super(
+      combineOptions<VBoxOptions>(
+        {
+          children: controls,
+          align: "center",
+          spacing: 6,
+        },
+        options.nodeOptions,
+      ),
+    );
 
     this.controlsInOrder = controls;
   }

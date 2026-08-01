@@ -16,7 +16,8 @@
 
 import type { TReadOnlyProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
-import { HBox, type NodeOptions, Path } from "scenerystack/scenery";
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
+import { HBox, type HBoxOptions, Path } from "scenerystack/scenery";
 import { RectangularPushButton } from "scenerystack/sun";
 import CarnotHeatEngineColors from "../../CarnotHeatEngineColors.js";
 import { FLAT_RECTANGULAR_BUTTON_OPTIONS } from "../CarnotHeatEngineButtonOptions.js";
@@ -37,11 +38,17 @@ export type StageStepperA11yStrings = {
   readonly lastStageStringProperty: TReadOnlyProperty<string>;
 };
 
+export type StageStepperNodeOptions = HBoxOptions;
+
 export class StageStepperNode extends HBox {
   /** The four buttons in tab order, for the ScreenView's pdomOrder. */
   public readonly controlsInOrder: RectangularPushButton[];
 
-  public constructor(cycle: CarnotCycleModel, a11y: StageStepperA11yStrings, options?: NodeOptions) {
+  public constructor(
+    cycle: CarnotCycleModel,
+    a11y: StageStepperA11yStrings,
+    providedOptions?: StageStepperNodeOptions,
+  ) {
     const firstButton = createStepperButton(
       firstGlyph(),
       () => cycle.rewindToCycleStart(),
@@ -55,11 +62,15 @@ export class StageStepperNode extends HBox {
     const nextButton = createStepperButton(nextGlyph(), () => cycle.stepToNextStage(), a11y.nextStageStringProperty);
     const lastButton = createStepperButton(lastGlyph(), () => cycle.jumpToLastStage(), a11y.lastStageStringProperty);
 
-    super({
-      children: [firstButton, previousButton, nextButton, lastButton],
-      spacing: 6,
-      ...options,
-    });
+    const options = optionize<StageStepperNodeOptions, EmptySelfOptions, HBoxOptions>()(
+      {
+        children: [firstButton, previousButton, nextButton, lastButton],
+        spacing: 6,
+      },
+      providedOptions,
+    );
+
+    super(options);
 
     this.controlsInOrder = [firstButton, previousButton, nextButton, lastButton];
   }

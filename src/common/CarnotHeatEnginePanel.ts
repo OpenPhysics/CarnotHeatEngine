@@ -25,21 +25,26 @@
  *   const panel = new CarnotHeatEnginePanel(content, { fill: "transparent" });
  */
 
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { Node } from "scenerystack/scenery";
-import type { PanelOptions } from "scenerystack/sun";
-import { Panel } from "scenerystack/sun";
+import { Panel, type PanelOptions } from "scenerystack/sun";
 import CarnotHeatEngineColors from "../CarnotHeatEngineColors.js";
 import { PANEL_CORNER_RADIUS } from "../CarnotHeatEngineConstants.js";
 
+export type CarnotHeatEnginePanelOptions = PanelOptions;
+
 export class CarnotHeatEnginePanel extends Panel {
-  public constructor(content: Node, providedOptions?: PanelOptions) {
-    super(content, {
-      fill: CarnotHeatEngineColors.panelBackgroundColorProperty,
-      stroke: CarnotHeatEngineColors.panelBorderColorProperty,
-      cornerRadius: PANEL_CORNER_RADIUS,
-      xMargin: 12,
-      yMargin: 10,
-      ...providedOptions,
-    });
+  public constructor(content: Node, providedOptions?: CarnotHeatEnginePanelOptions) {
+    const options = optionize<CarnotHeatEnginePanelOptions, EmptySelfOptions, PanelOptions>()(
+      {
+        fill: CarnotHeatEngineColors.panelBackgroundColorProperty,
+        stroke: CarnotHeatEngineColors.panelBorderColorProperty,
+        cornerRadius: PANEL_CORNER_RADIUS,
+        xMargin: 12,
+        yMargin: 10,
+      },
+      providedOptions,
+    );
+    super(content, options);
   }
 }

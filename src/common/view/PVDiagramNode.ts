@@ -27,6 +27,7 @@ import { Multilink, type TReadOnlyProperty } from "scenerystack/axon";
 import { LinePlot } from "scenerystack/bamboo";
 import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
+import { combineOptions } from "scenerystack/phet-core";
 import { Circle, type NodeOptions, Path, Text } from "scenerystack/scenery";
 import { ArrowNode } from "scenerystack/scenery-phet";
 import CarnotHeatEngineColors from "../../CarnotHeatEngineColors.js";
@@ -36,6 +37,7 @@ import { CycleDirection } from "../model/CycleDirection.js";
 import { CYCLE_STAGE_ORDER, type CycleStage, isColdIsothermal, isHotIsothermal } from "../model/CycleStage.js";
 import type { CycleGeometry, CycleShape, CycleState } from "../model/carnotCycleGeometry.js";
 import { sampleLeg } from "../model/carnotCycleGeometry.js";
+import type { CycleDiagramNodeOptions } from "./CycleDiagramNode.js";
 import { CycleDiagramNode } from "./CycleDiagramNode.js";
 import { extentOf, padRange } from "./chartUtils.js";
 
@@ -88,12 +90,16 @@ export class PVDiagramNode extends CycleDiagramNode {
   public constructor(providedOptions: PVDiagramNodeOptions) {
     const diagramStrings = StringManager.getInstance().getDiagrams();
 
-    super({
-      titleProperty: diagramStrings.pvTitleStringProperty,
-      xAxisLabelProperty: diagramStrings.pvXAxisStringProperty,
-      yAxisLabelProperty: diagramStrings.pvYAxisStringProperty,
-      ...(providedOptions.nodeOptions && { nodeOptions: providedOptions.nodeOptions }),
-    });
+    super(
+      combineOptions<CycleDiagramNodeOptions>(
+        {
+          titleProperty: diagramStrings.pvTitleStringProperty,
+          xAxisLabelProperty: diagramStrings.pvXAxisStringProperty,
+          yAxisLabelProperty: diagramStrings.pvYAxisStringProperty,
+        },
+        providedOptions.nodeOptions !== undefined ? { nodeOptions: providedOptions.nodeOptions } : {},
+      ),
+    );
 
     this.geometryProperty = providedOptions.geometryProperty;
     this.activeStageProperty = providedOptions.activeStageProperty;

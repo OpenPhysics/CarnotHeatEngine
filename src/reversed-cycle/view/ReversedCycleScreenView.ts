@@ -11,8 +11,8 @@
  * `PVDiagramNode`, the same `EnergyFlowNode`, the same parameter sliders.
  */
 
-import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
+import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { INTER_ELEMENT_GAP, SCREEN_VIEW_MARGIN } from "../../CarnotHeatEngineConstants.js";
 import { CarnotHeatEnginePanel } from "../../common/CarnotHeatEnginePanel.js";
 import {
@@ -36,16 +36,21 @@ import { ReversedCycleScreenSummaryContent } from "./ReversedCycleScreenSummaryC
  */
 const DIAGRAM_LEFT_INSET = 40;
 
+export type ReversedCycleScreenViewOptions = ScreenViewOptions;
+
 export class ReversedCycleScreenView extends ScreenView {
   public constructor(
     model: ReversedCycleModel,
     preferences: CarnotHeatEnginePreferencesModel,
-    options?: ScreenViewOptions,
+    providedOptions?: ReversedCycleScreenViewOptions,
   ) {
-    super({
-      screenSummaryContent: new ReversedCycleScreenSummaryContent(model),
-      ...options,
-    });
+    const options = optionize<ReversedCycleScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new ReversedCycleScreenSummaryContent(model),
+      },
+      providedOptions,
+    );
+    super(options);
 
     const backgroundRect = createBackgroundFill(this.layoutBounds);
     this.addChild(backgroundRect);
