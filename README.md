@@ -1,5 +1,7 @@
 # Carnot Heat Engine
 
+[![CI](https://github.com/OpenPhysics/CarnotHeatEngine/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenPhysics/CarnotHeatEngine/actions/workflows/ci.yml)
+
 An interactive simulation of the ideal reversible Carnot cycle, built with
 [SceneryStack](https://scenerystack.org/), Vite 8, TypeScript 7, and Biome 2.
 Three screens tie the four legs of the cycle to a physical piston-cylinder, to
