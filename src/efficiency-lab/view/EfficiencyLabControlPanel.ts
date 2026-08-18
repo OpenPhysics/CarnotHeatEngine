@@ -118,7 +118,7 @@ const createCheckbox = (
       // must use the light-surface text colour, not the panel text colour
       // (near-white in default mode) — otherwise the glyph is invisible on white.
       checkboxColor: LIGHT_SURFACE_TEXT_FILL,
-      checkboxColorBackground: CarnotHeatEngineColors.controlSurfaceColorProperty,
+      checkboxColorBackground: CarnotHeatEngineColors.panelBackgroundColorProperty,
       spacing: 8,
       accessibleName,
     },
