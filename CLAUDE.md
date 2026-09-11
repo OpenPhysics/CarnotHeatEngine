@@ -1,6 +1,6 @@
 # CLAUDE.md — Carnot Heat Engine
 
-Sim-specific context for AI assistants. General SceneryStack guidance: [OpenPhysics/.github/CLAUDE.md](https://github.com/OpenPhysics/.github/blob/main/CLAUDE.md).
+Sim-specific context for AI assistants. General SceneryStack guidance: [OpenLyceum/.github/CLAUDE.md](https://github.com/OpenLyceum/.github/blob/main/CLAUDE.md).
 
 ## Project
 
@@ -135,7 +135,7 @@ The Efficiency Lab's summary respects Measure mode: it says the efficiency is
 hidden rather than reading it out, so a screen-reader user gets the same exercise
 a sighted user does instead of a spoiler. Keep that if you touch the summary.
 
-Full convention: [Baton/ACCESSIBILITY.md](https://github.com/OpenPhysics/Baton/blob/main/ACCESSIBILITY.md).
+Full convention: [Baton/ACCESSIBILITY.md](https://github.com/OpenLyceum/Baton/blob/main/ACCESSIBILITY.md).
 
 ## Compliance carve-outs
 
